@@ -1,12 +1,12 @@
-#ifndef _LOCATOR_SENSOR_MANAGER_H_
-#define _LOCATOR_SENSOR_MANAGER_H_
+#ifndef _INS_FUSION_SENSOR_MANAGER_H_
+#define _INS_FUSION_SENSOR_MANAGER_H_
 
 #include "datatype_basic.h"
 #include "binary_data_log.h"
 #include "deque"
 #include "memory"
 
-namespace LOCATOR {
+namespace INS {
 
 using namespace SLAM_UTILITY;
 using namespace SLAM_DATA_LOG;
@@ -85,4 +85,4 @@ std::unique_ptr<MeasureType> SensorManager<StateType, MeasureType>::GetOldestMea
 
 }
 
-#endif // end of _LOCATOR_SENSOR_MANAGER_H_
+#endif // end of _INS_FUSION_SENSOR_MANAGER_H_

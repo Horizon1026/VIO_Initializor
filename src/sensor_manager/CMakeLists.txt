@@ -1,4 +1,4 @@
-aux_source_directory( . AUX_SRC_LOCATOR_SENSOR_MANAGER )
+aux_source_directory( . AUX_SRC_INS_FUSION_SENSOR_MANAGER )
 
 # Add all components of slam utility.
 set( SLAM_UTILITY_PATH ${PROJECT_SOURCE_DIR}/../Slam_Utility/src )
@@ -25,9 +25,9 @@ if ( NOT TARGET lib_binary_data_log )
 endif()
 
 # Create library.
-add_library( lib_locator_sensor_manager ${AUX_SRC_LOCATOR_SENSOR_MANAGER} )
-target_include_directories( lib_locator_sensor_manager PUBLIC . )
-target_link_libraries( lib_locator_sensor_manager
+add_library( lib_ins_fusion_sensor_manager ${AUX_SRC_INS_FUSION_SENSOR_MANAGER} )
+target_include_directories( lib_ins_fusion_sensor_manager PUBLIC . )
+target_link_libraries( lib_ins_fusion_sensor_manager
     lib_slam_utility_datatype
     lib_slam_utility_math
     lib_slam_utility_log

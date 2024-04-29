@@ -1,3 +1,3 @@
 cd ./build
-./test_locator
+./test_pure_imu
 cd ..

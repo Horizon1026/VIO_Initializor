@@ -1,9 +1,9 @@
-#ifndef _LOCATOR_IMU_MANAGER_LOG_H_
-#define _LOCATOR_IMU_MANAGER_LOG_H_
+#ifndef _INS_FUSION_IMU_MANAGER_LOG_H_
+#define _INS_FUSION_IMU_MANAGER_LOG_H_
 
 #include "datatype_basic.h"
 
-namespace LOCATOR {
+namespace INS {
 
 /* Packages of log to be recorded. */
 #pragma pack(1)
@@ -74,4 +74,4 @@ struct ImuManagerLogObserveResidual {
 
 }
 
-#endif // end of _LOCATOR_IMU_MANAGER_LOG_H_
+#endif // end of _INS_FUSION_IMU_MANAGER_LOG_H_

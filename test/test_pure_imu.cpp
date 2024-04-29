@@ -18,7 +18,7 @@ void LoadSimDataAndPublish(const std::string &file_name, InsFusion &ins) {
 
     // Publish each line of data file.
     std::string one_line;
-    uint32_t cnt = 10000;
+    uint32_t cnt = 100000;
     while (std::getline(file, one_line) && !one_line.empty()) {
         if (!cnt--) {
             break;
@@ -39,6 +39,7 @@ void LoadSimDataAndPublish(const std::string &file_name, InsFusion &ins) {
             imu.time_stamp_s = time_stamp_s - 1624426287.19101906;
 
             ins.imu_manager()->AddMeasurement(imu);
+
         }
 
         ins.RunOnce();

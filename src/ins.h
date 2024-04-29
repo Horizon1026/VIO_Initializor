@@ -1,22 +1,21 @@
-#ifndef _LOCATOR_H_
-#define _LOCATOR_H_
+#ifndef _INS_FUSION_H_
+#define _INS_FUSION_H_
 
 #include "datatype_basic.h"
-#include "binary_data_log.h"
 #include "ins_log.h"
+#include "binary_data_log.h"
 
 #include "imu_measurement.h"
 #include "imu_state.h"
 #include "imu_manager.h"
 
-namespace LOCATOR {
+namespace INS {
 
 using namespace SLAM_SOLVER;
 
 /* Frames Definition. */
 // w. World frame.
 // i. Imu frame.
-// c. Camera frame.
 
 /* Options of InsFusion. */
 struct InsFusionOptions {
@@ -75,4 +74,4 @@ private:
 
 }
 
-#endif // end of _LOCATOR_H_
+#endif // end of _INS_FUSION_H_

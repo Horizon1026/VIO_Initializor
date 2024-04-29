@@ -2,7 +2,7 @@
 #include "log_report.h"
 #include "slam_operations.h"
 
-namespace LOCATOR {
+namespace INS {
 
 namespace {
     constexpr uint32_t kImuManagerMeasuresLogIndex = 1;

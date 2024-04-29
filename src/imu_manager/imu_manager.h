@@ -1,5 +1,5 @@
-#ifndef _LOCATOR_IMU_MANAGER_H_
-#define _LOCATOR_IMU_MANAGER_H_
+#ifndef _INS_FUSION_IMU_MANAGER_H_
+#define _INS_FUSION_IMU_MANAGER_H_
 
 #include "datatype_basic.h"
 #include "sensor_manager.h"
@@ -11,7 +11,7 @@
 
 #include "square_root_kalman_filter.h"
 
-namespace LOCATOR {
+namespace INS {
 
 using namespace SLAM_UTILITY;
 using namespace SLAM_SOLVER;
@@ -100,4 +100,4 @@ private:
 
 }
 
-#endif // end of _LOCATOR_IMU_MANAGER_H_
+#endif // end of _INS_FUSION_IMU_MANAGER_H_

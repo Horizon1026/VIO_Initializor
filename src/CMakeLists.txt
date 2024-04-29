@@ -1,4 +1,4 @@
-aux_source_directory( . AUX_SRC_LOCATOR_SCHUR_VINS )
+aux_source_directory( . AUX_SRC_INS_FUSION )
 
 # Add all components of slam utility.
 set( SLAM_UTILITY_PATH ${PROJECT_SOURCE_DIR}/../Slam_Utility/src )
@@ -18,10 +18,10 @@ if ( NOT TARGET lib_slam_utility_tick_tock )
     add_subdirectory( ${SLAM_UTILITY_PATH}/tick_tock ${PROJECT_SOURCE_DIR}/build/lib_slam_utility_tick_tock )
 endif()
 
-# Add manager of imu, vision.
-set( INS_FUSION_PATH ${PROJECT_SOURCE_DIR}/../INS_Fusion/src )
-if ( NOT TARGET lib_locator_imu_manager )
-    add_subdirectory( ${INS_FUSION_PATH}/imu_manager ${PROJECT_SOURCE_DIR}/build/lib_locator_imu_manager )
+# Add manager of imu, gnss, wheel_odom.
+set( INS_FUSION_PATH ${PROJECT_SOURCE_DIR}/../VIO_Stereo_SchurVINS/src )
+if ( NOT TARGET lib_ins_fusion_imu_manager )
+    add_subdirectory( ${INS_FUSION_PATH}/imu_manager ${PROJECT_SOURCE_DIR}/build/lib_ins_fusion_imu_manager )
 endif()
 
 # Add binary data logger.
@@ -31,16 +31,16 @@ if ( NOT TARGET lib_binary_data_log )
 endif()
 
 # Create library.
-add_library( lib_locator_schur_vins ${AUX_SRC_LOCATOR_SCHUR_VINS} )
-target_include_directories( lib_locator_schur_vins PUBLIC . )
-target_link_libraries( lib_locator_schur_vins
+add_library( lib_ins_fusion ${AUX_SRC_INS_FUSION} )
+target_include_directories( lib_ins_fusion PUBLIC . )
+target_link_libraries( lib_ins_fusion
     lib_slam_utility_datatype
     lib_slam_utility_math
     lib_slam_utility_log
     lib_slam_utility_operate
     lib_slam_utility_tick_tock
 
-    lib_locator_imu_manager
+    lib_ins_fusion_imu_manager
 
     lib_binary_data_log
 )

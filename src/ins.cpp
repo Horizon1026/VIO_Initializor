@@ -2,7 +2,7 @@
 #include "slam_operations.h"
 #include "log_report.h"
 
-namespace LOCATOR {
+namespace INS {
 
 bool InsFusion::Initialize() {
     RETURN_FALSE_IF(imu_manager_ == nullptr);
@@ -27,6 +27,7 @@ bool InsFusion::RunOnce() {
     }
 
     RecordLog();
+
     return true;
 }
 

@@ -2,7 +2,7 @@
 #include "slam_operations.h"
 #include "log_report.h"
 
-namespace LOCATOR {
+namespace INS {
 
 float ImuManager::GetOldestMeasurementTimestamp() {
     if (measures().empty()) {
