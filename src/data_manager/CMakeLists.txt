@@ -1,4 +1,4 @@
-aux_source_directory( . AUX_SRC_VIO_STEREO_VINS_DATA_MANAGER )
+aux_source_directory( . AUX_SRC_VIO_STEREO_SCHUR_VINS_DATA_MANAGER )
 
 # Add all components of slam utility.
 set( SLAM_UTILITY_PATH ${PROJECT_SOURCE_DIR}/../Slam_Utility/src )
@@ -46,15 +46,15 @@ if ( NOT TARGET lib_3d_visualizor )
 endif()
 
 # Add data loader.
-set( DATA_LOADER_PATH ${PROJECT_SOURCE_DIR}/../VIO_Stereo_VINS/src/data_loader )
-if ( NOT TARGET lib_vio_stereo_vins_data_loader )
-    add_subdirectory( ${DATA_LOADER_PATH} ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_vins_data_loader )
+set( DATA_LOADER_PATH ${PROJECT_SOURCE_DIR}/../VIO_Stereo_SchurVINS/src/data_loader )
+if ( NOT TARGET lib_vio_stereo_schur_vins_data_loader )
+    add_subdirectory( ${DATA_LOADER_PATH} ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_schur_vins_data_loader )
 endif()
 
 # Add visual frontend.
-set( VISUAL_FRONTEND_PATH ${PROJECT_SOURCE_DIR}/../VIO_Stereo_VINS/src/frontend )
-if ( NOT TARGET lib_vio_stereo_vins_frontend )
-    add_subdirectory( ${VISUAL_FRONTEND_PATH} ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_vins_frontend )
+set( VISUAL_FRONTEND_PATH ${PROJECT_SOURCE_DIR}/../VIO_Stereo_SchurVINS/src/frontend )
+if ( NOT TARGET lib_vio_stereo_schur_vins_frontend )
+    add_subdirectory( ${VISUAL_FRONTEND_PATH} ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_schur_vins_frontend )
 endif()
 
 # Add imu model.
@@ -64,9 +64,9 @@ if ( NOT TARGET lib_imu_model )
 endif()
 
 # Create library.
-add_library( lib_vio_stereo_vins_data_manager ${AUX_SRC_VIO_STEREO_VINS_DATA_MANAGER} )
-target_include_directories( lib_vio_stereo_vins_data_manager PUBLIC . )
-target_link_libraries( lib_vio_stereo_vins_data_manager
+add_library( lib_vio_stereo_schur_vins_data_manager ${AUX_SRC_VIO_STEREO_SCHUR_VINS_DATA_MANAGER} )
+target_include_directories( lib_vio_stereo_schur_vins_data_manager PUBLIC . )
+target_link_libraries( lib_vio_stereo_schur_vins_data_manager
     lib_slam_utility_datatype
     lib_slam_utility_math
     lib_slam_utility_operate
@@ -74,8 +74,8 @@ target_link_libraries( lib_vio_stereo_vins_data_manager
     lib_slam_utility_memory
     lib_slam_utility_tick_tock
 
-    lib_vio_stereo_vins_data_loader
-    lib_vio_stereo_vins_frontend
+    lib_vio_stereo_schur_vins_data_loader
+    lib_vio_stereo_schur_vins_frontend
 
     lib_covisible_graph
     lib_object_pool

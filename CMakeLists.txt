@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.0 )
 
-project( test_vio_stereo_vins )
+project( test_vio_stereo_schur_vins )
 
 set( CMAKE_BUILD_TYPE "RelWithDegInfo" )
 set( CMAKE_CXX_FLAGS "-std=c++17 -O3 -g -Wall -pthread" )
@@ -14,8 +14,8 @@ if ( NOT TARGET lib_stack_backward )
 endif()
 
 # Add vio stereo vins.
-if ( NOT TARGET lib_vio_stereo_vins )
-    add_subdirectory( src ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_vins )
+if ( NOT TARGET lib_vio_stereo_schur_vins )
+    add_subdirectory( src ${PROJECT_SOURCE_DIR}/build/lib_vio_stereo_schur_vins )
 endif()
 
 # Add test_vio.
@@ -23,6 +23,6 @@ add_executable( test_vio
     test/test_vio.cpp
 )
 target_link_libraries( test_vio
-    lib_vio_stereo_vins
+    lib_vio_stereo_schur_vins
     lib_stack_backward
 )
