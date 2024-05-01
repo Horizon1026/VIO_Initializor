@@ -92,7 +92,11 @@ private:
 
     // Backend initializor.
     bool TryToInitialize();
-    bool ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii);
+    bool ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii,
+                                             std::vector<Vec3> &all_p_i0ii,
+                                             std::vector<float> &all_dt_i0ii);
+    bool ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &all_q_i0ii, const std::vector<Vec3> &all_p_i0ii,
+        const std::vector<float> &all_dt_i0ii, Vec3 &v_i0i0, Vec3 &g_i0);
 
     // Backend data processor.
     bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
