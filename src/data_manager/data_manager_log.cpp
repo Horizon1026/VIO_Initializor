@@ -33,6 +33,7 @@ void DataManager::RegisterLogPackages() {
     package_ptr->items.emplace_back(PackageItemInfo{.type = ItemType::kUint32, .name = "num_of_marginalized_features"});
     package_ptr->items.emplace_back(PackageItemInfo{.type = ItemType::kUint32, .name = "num_of_unsolved_features"});
     package_ptr->items.emplace_back(PackageItemInfo{.type = ItemType::kUint32, .name = "num_of_frames"});
+    package_ptr->items.emplace_back(PackageItemInfo{.type = ItemType::kUint32, .name = "num_of_imu_based_frames"});
     if (!logger_.RegisterPackage(package_ptr)) {
         ReportError("[DataManager] Failed to register package for data manager local map log.");
     }
@@ -41,7 +42,6 @@ void DataManager::RegisterLogPackages() {
 void DataManager::TriggerLogRecording(const float time_stamp_s) {
     RETURN_IF(!options_.kEnableRecordBinaryCurveLog);
     RETURN_IF(visual_local_map_ == nullptr);
-
     RecordLocalMap(time_stamp_s);
 }
 
@@ -69,7 +69,7 @@ void DataManager::RecordLocalMap(const float time_stamp_s) {
     }
 
     log_package.num_of_frames = visual_local_map_->frames().size();
-
+    log_package.num_of_imu_based_frames = imu_based_frames_.size();
     logger_.RecordPackage(kDataManagerLocalMapLogIndex, reinterpret_cast<const char *>(&log_package), time_stamp_s);
 }
 

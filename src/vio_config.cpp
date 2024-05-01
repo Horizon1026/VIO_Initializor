@@ -10,18 +10,18 @@
 namespace VIO {
 
 bool Vio::ConfigAllComponents() {
-    if (!ConfigComponentOfDataManager()) {
-        ReportColorError( "[Vio] Failed to configure data manager.");
-        return false;
-    } else {
-        ReportColorInfo( "[Vio] Data manager configured.");
-    }
-
     if (!ConfigComponentOfDataLoader()) {
         ReportColorError( "[Vio] Failed to configure data loader.");
         return false;
     } else {
         ReportColorInfo( "[Vio] Data loader configured.");
+    }
+
+    if (!ConfigComponentOfDataManager()) {
+        ReportColorError( "[Vio] Failed to configure data manager.");
+        return false;
+    } else {
+        ReportColorInfo( "[Vio] Data manager configured.");
     }
 
     if (!ConfigComponentOfFrontend()) {

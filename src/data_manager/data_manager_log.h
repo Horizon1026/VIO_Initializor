@@ -12,8 +12,8 @@ struct DataManagerLocalMapLog {
     uint32_t num_of_solved_features = 0;
     uint32_t num_of_marginalized_features = 0;
     uint32_t num_of_unsolved_features = 0;
-
     uint32_t num_of_frames = 0;
+    uint32_t num_of_imu_based_frames = 0;
 };
 #pragma pack()
 

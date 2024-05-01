@@ -74,11 +74,9 @@ public:
     bool Configuration(const std::string &log_file_name);
     void RegisterLogPackages();
     void TriggerLogRecording(const float time_stamp_s);
-    void RecordLocalMap(const float time_stamp_s);
 
     // Self check.
     bool SelfCheckVisualLocalMap();
-    bool SelfCheckImuBasedFrames();
 
     // Transform packed measurements to a new frame.
     bool ProcessMeasure(std::unique_ptr<PackedMeasurement> &new_packed_measure,
@@ -87,15 +85,11 @@ public:
     // Convert all frames with bias into visual local map.
     bool ConvertAllImuBasedFramesToLocalMap();
 
-    // Compute imu accel variance.
-    float ComputeImuAccelVariance();
-
     // Compute correspondence between two frames.
     FramesCorresbondence GetCorresbondence(const int32_t frame_id_i, const int32_t frame_id_j);
 
     // Visualizor of managed data.
     void ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const int32_t delay_ms = 0);
-    void ShowAllImuBasedFrames(const int32_t delay_ms = 0);
     void ShowLocalMapFramesAndFeatures(const int32_t feature_id = -1, const int32_t camera_id = 0, const int32_t delay_ms = 0);
     void ShowLocalMapInWorldFrame(const std::string &title, const int32_t delay_ms, const bool block_in_loop = false);
     void ShowSimpleInformationOfVisualLocalMap();
@@ -109,6 +103,9 @@ public:
     std::vector<CameraExtrinsic> &camera_extrinsics() { return camera_extrinsics_; }
 
 private:
+    // Support for log record.
+    void RecordLocalMap(const float time_stamp_s);
+
     // Support for visualizor.
     RgbPixel GetFeatureColor(const FeatureType &feature);
     void ShowLocalMapInWorldFrame();
