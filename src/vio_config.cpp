@@ -126,6 +126,19 @@ bool Vio::ConfigComponentOfFrontend() {
 bool Vio::ConfigComponentOfBackend() {
     // Config backend.
     backend_ = std::make_unique<Backend>();
+    backend_->options().kEnableRecordBinaryCurveLog = options_.backend.enable_recording_curve_binlog;
+    RETURN_FALSE_IF_FALSE(backend_->Configuration(options_.log_file_root_name + options_.backend.log_file_name));
+
+    // Config imu model.
+    backend_->imu_model() = std::make_unique<Imu>();
+    backend_->imu_model()->options().kAccelNoiseSigma = options_.imu.noise_accel;
+    backend_->imu_model()->options().kGyroNoiseSigma = options_.imu.noise_gyro;
+    backend_->imu_model()->options().kAccelRandomWalkSigma = options_.imu.random_walk_accel;
+    backend_->imu_model()->options().kGyroRandomWalkSigma = options_.imu.random_walk_gyro;
+
+    // Register components.
+    backend_->data_manager() = data_manager_.get();
+    backend_->visual_frontend() = frontend_.get();
 
     return true;
 }

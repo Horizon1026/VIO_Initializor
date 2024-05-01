@@ -9,6 +9,7 @@
 #include "visual_frontend.h"
 #include "general_graph_optimizor.h"
 
+#include "backend_log.h"
 #include "binary_data_log.h"
 
 namespace VIO {
@@ -21,7 +22,13 @@ using DorF = float;
 
 /* Options for Backend. */
 struct BackendOptions {
+    bool kEnableRecordBinaryCurveLog = true;
 
+    Vec3 kGravityInWordFrame = Vec3(0.0f, 0.0f, 0.0f);
+
+    float kMaxValidFeatureDepthInMeter = 0.0f;
+    float kMinValidFeatureDepthInMeter = 0.0f;
+    float kDefaultFeatureDepthInMeter = 0.0f;
 };
 
 struct BackendStatus {
@@ -62,9 +69,15 @@ public:
     void Reset();
     void ResetToReintialize();
 
+    // Backend log recorder.
+    bool Configuration(const std::string &log_file_name);
+
     // Reference for member variables.
     BackendOptions &options() { return options_; }
     BackendSignals &signals() { return signals_; }
+    VisualFrontend *&visual_frontend() { return visual_frontend_; }
+    DataManager *&data_manager() { return data_manager_; }
+    std::unique_ptr<Imu> &imu_model() { return imu_model_; }
 
     // Const reference for member variables.
     const BackendOptions &options() const { return options_; }
@@ -73,15 +86,27 @@ public:
     const BackendSignals &signals() const { return signals_; }
 
 private:
+    // Backend log recorder.
+    void RegisterLogPackages();
+    void RecordBackendLogStates();
+
+private:
     // Options of backend.
     BackendOptions options_;
-
     // Flags of status of backend.
     BackendStatus status_;
     // Motion and prior states of backend.
     BackendStates states_;
     // Signals of backend.
     BackendSignals signals_;
+
+    // Register some relative components.
+    VisualFrontend *visual_frontend_ = nullptr;
+    DataManager *data_manager_ = nullptr;
+    std::unique_ptr<Imu> imu_model_ = nullptr;
+
+    // Record log.
+    BinaryDataLog logger_;
 };
 
 }

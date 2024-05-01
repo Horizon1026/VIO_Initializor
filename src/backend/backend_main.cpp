@@ -7,6 +7,8 @@ namespace VIO {
 bool Backend::RunOnce() {
     ReportInfo(MAGENTA "[Backend] Backend is triggerred to run once." RESET_COLOR);
 
+    // Record log.
+    RecordBackendLogStates();
     return true;
 }
 
