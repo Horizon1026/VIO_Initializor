@@ -247,7 +247,7 @@ void ConfigAllComponentsOfVio()
 
     // Config vio.
     vio.ConfigAllComponents();
-    LogFixPercision(4);
+    LogFixPercision(3);
 }
 
 static std::ofstream g_txt_log("../output/vio_log.txt");

@@ -87,7 +87,7 @@ FramesCorresbondence DataManager::GetCorresbondence(const int32_t frame_id_i, co
 }
 
 void DataManager::ControlSizeOfImuBasedFrames() {
-    while (imu_based_frames_.size() > options_.kMaxStoredKeyFrames) {
+    while (imu_based_frames_.size() >= options_.kMaxStoredKeyFrames) {
         imu_based_frames_.pop_front();
     }
 }

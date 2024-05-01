@@ -90,6 +90,22 @@ private:
     void RegisterLogPackages();
     void RecordBackendLogStates();
 
+    // Backend initializor.
+    bool TryToInitialize();
+    bool ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii);
+
+    // Backend data processor.
+    bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
+                                                       const Vec3 &init_p_wc = Vec3::Zero(),
+                                                       const Quat &init_q_wc = Quat::Identity());
+    bool TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id,
+                                                      const int32_t min_frame_id = -1,
+                                                      const int32_t max_frame_id = kMaxInt32,
+                                                      const bool use_multi_view = false);
+    void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
+                                         const Vec3 &bias_gyro,
+                                         ImuBasedFrame &imu_based_frame);
+
 private:
     // Options of backend.
     BackendOptions options_;

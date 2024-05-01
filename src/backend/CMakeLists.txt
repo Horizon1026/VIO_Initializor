@@ -1,5 +1,4 @@
 aux_source_directory( . AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND )
-aux_source_directory( graph_manager AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_GRAPH_MANAGER )
 aux_source_directory( initializor AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_INITIALIZOR )
 aux_source_directory( estimator AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_ESTIMATOR )
 
@@ -47,9 +46,6 @@ endif()
 if ( NOT TARGET lib_vision_geometry_triangulation )
     add_subdirectory( ${VISION_GEOMETRY_PATH}/triangulation ${PROJECT_SOURCE_DIR}/build/lib_vision_geometry_triangulation )
 endif()
-if ( NOT TARGET lib_vision_geometry_relative_rotation )
-    add_subdirectory( ${VISION_GEOMETRY_PATH}/relative_rotation ${PROJECT_SOURCE_DIR}/build/lib_vision_geometry_relative_rotation )
-endif()
 
 # Add components of slam solver.
 set( SLAM_SOLVER_PATH ${PROJECT_SOURCE_DIR}/../Slam_Solver/src )
@@ -69,13 +65,11 @@ endif()
 # Create library.
 add_library( lib_vio_stereo_schur_vins_backend
     ${AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND}
-    ${AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_GRAPH_MANAGER}
     ${AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_INITIALIZOR}
     ${AUX_SRC_VIO_STEREO_SCHUR_VINS_BACKEND_ESTIMATOR}
 )
 target_include_directories( lib_vio_stereo_schur_vins_backend
     PUBLIC .
-        graph_manager
         initializor
         estimator
 )
@@ -93,7 +87,6 @@ target_link_libraries( lib_vio_stereo_schur_vins_backend
     lib_vision_geometry_epipolar
     lib_vision_geometry_pnp
     lib_vision_geometry_triangulation
-    lib_vision_geometry_relative_rotation
 
     lib_binary_data_log
 
