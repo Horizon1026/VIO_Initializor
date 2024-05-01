@@ -78,12 +78,11 @@ public:
     // Self check.
     bool SelfCheckVisualLocalMap();
 
-    // Transform packed measurements to a new frame.
+    // Process measurements in imu_based_frames and visual_local_map.
     bool ProcessMeasure(std::unique_ptr<PackedMeasurement> &new_packed_measure,
                         std::unique_ptr<FrontendOutputData> &new_visual_measure);
-
-    // Convert all frames with bias into visual local map.
     bool ConvertAllImuBasedFramesToLocalMap();
+    void ControlSizeOfImuBasedFrames();
 
     // Compute correspondence between two frames.
     FramesCorresbondence GetCorresbondence(const int32_t frame_id_i, const int32_t frame_id_j);
