@@ -55,45 +55,66 @@ bool Backend::ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &
     const std::vector<float> &all_dt_i0ii, Vec3 &v_i0i0, Vec3 &g_i0) {
     RETURN_FALSE_IF(data_manager_->visual_local_map()->features().empty());
     RETURN_FALSE_IF(data_manager_->camera_extrinsics().empty());
+
+    // Select valid feaures.
+    std::vector<FeatureType *> selected_features;
+    int32_t num_of_all_obv = 0;
+    for (auto &pair : data_manager_->visual_local_map()->features()) {
+        auto &feature = pair.second;
+        const int32_t num_of_obv = feature.observes().size();
+        CONTINUE_IF(num_of_obv < 5);
+        selected_features.emplace_back(&feature);
+        num_of_all_obv += num_of_obv;
+    }
+
+    // Extract camera extrinsics.
     const Quat &q_ic = data_manager_->camera_extrinsics().front().q_ic;
     const Vec3 &p_ic = data_manager_->camera_extrinsics().front().p_ic;
 
-    for (auto &pair : data_manager_->visual_local_map()->features()) {
-        const auto &feature = pair.second;
-
-        // Construct linear function.
-        const int32_t num_of_obv = feature.observes().size();
-        CONTINUE_IF(num_of_obv < 5);
-        Mat A = Mat::Zero(num_of_obv * 2, 3 + 3 + 3);
-        Vec b = Vec::Zero(num_of_obv * 2);
-
-        int32_t idx = feature.first_frame_id() - data_manager_->visual_local_map()->frames().front().id();
-        int32_t row_idx = 0;
-        for (const auto &observe : feature.observes()) {
-            const Vec2 norm_xy = observe[0].rectified_norm_xy;
+    // Construct linear function.
+    // x = [gravity_i0, v_i0i0, p_i0_f1, p_i0_f2, p_i0_f3, ...]
+    Mat A = Mat::Zero(2 * num_of_all_obv, 6 + selected_features.size() * 3);
+    Vec b = Vec::Zero(2 * num_of_all_obv);
+    int32_t row_index = 0;
+    for (uint32_t feature_index = 0; feature_index < selected_features.size(); ++feature_index) {
+        auto &feature_ptr = selected_features[feature_index];
+        int32_t vector_index = feature_ptr->first_frame_id() - data_manager_->visual_local_map()->frames().front().id();
+        for (const auto &observe : feature_ptr->observes()) {
             /* gama = [1  0  -u]
                       [0  1  -v] */
+            const Vec2 norm_xy = observe[0].rectified_norm_xy;
             Mat2x3 gama = Mat2x3::Identity();
             gama.col(2) = - norm_xy;
             /* upsilon = gama * q_ic.inv * q_i0ii.inv */
-            const Quat &q_i0ii = all_q_i0ii[idx];
+            const Quat &q_i0ii = all_q_i0ii[vector_index];
             const Mat2x3 upsilon = gama * q_ic.toRotationMatrix().transpose() * q_i0ii.toRotationMatrix().transpose();
             // Fill linear function.
-            const Vec3 &p_i0ii = all_p_i0ii[idx];
-            const float &dt = all_dt_i0ii[idx];
-            A.block<2, 3>(row_idx, 0) = - upsilon * dt;
-            A.block<2, 3>(row_idx, 3) = upsilon;
-            A.block<2, 3>(row_idx, 6) = upsilon * dt * dt * 0.5f;
-            b.segment<2>(row_idx) = upsilon * p_i0ii + gama * q_ic.toRotationMatrix().transpose() * p_ic;
+            const Vec3 &p_i0ii = all_p_i0ii[vector_index];
+            const float &dt = all_dt_i0ii[vector_index];
+            A.block<2, 3>(row_index, 0) = upsilon * dt * dt * 0.5f;
+            A.block<2, 3>(row_index, 3) = - upsilon * dt;
+            A.block<2, 3>(row_index, 6 + feature_index * 3) = upsilon;
+            b.segment<2>(row_index) = upsilon * p_i0ii + gama * q_ic.toRotationMatrix().transpose() * p_ic;
             // Prepare for next observation.
-            ++idx;
-            row_idx += 2;
+            ++vector_index;
+            row_index += 2;
         }
-
-        // Solve linear function.
-        const Vec9 x = (A.transpose() * A).inverse() * A.transpose() * b;
-        ReportInfo("x " << LogVec(x));
     }
+
+    // Solve linear function.
+    const Vec x = A.householderQr().solve(b);
+    g_i0 = x.segment<3>(0);
+    v_i0i0 = x.segment<3>(3);
+    for (uint32_t feature_index = 0; feature_index < selected_features.size(); ++feature_index) {
+        auto &feature_ptr = selected_features[feature_index];
+        feature_ptr->status() = FeatureSolvedStatus::kSolved;
+        feature_ptr->param() = x.segment<3>(6 + feature_index * 3);
+    }
+
+    // Debug.
+    const Vec3 gravity_c0 = q_ic.inverse() * g_i0;
+    ReportInfo("estimate : gravity_c0 " << LogVec(gravity_c0) << ", gravity_i0 " << LogVec(g_i0));
+    ReportInfo("groud truth : gravity_c0 [vec][ 3.6141 -8.3455 -3.0455], gravity_i0 is [vec][ 8.38406 -1.21679 -4.92615]");
 
     return true;
 }
