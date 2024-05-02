@@ -15,12 +15,13 @@ bool Backend::TryToInitialize() {
         ReportError("[Backend] Backend failed to convert frames to covisible graph.");
         return false;
     }
+    data_manager_->ShowLocalMapFramesAndFeatures(-1, 0, 0);
 
     // Compute R_i0i1, R_i0i2, R_i0i3 and so on.
     std::vector<Quat> all_q_i0ii;
     std::vector<Vec3> all_p_i0ii;
     std::vector<float> all_dt_i0ii;
-    if (!ComputeRotationBasedOnFirstImuFrame(all_q_i0ii, all_p_i0ii, all_dt_i0ii)) {
+    if (!PreintegrateBasedOnFirstImuFrame(all_q_i0ii, all_p_i0ii, all_dt_i0ii)) {
         ReportError("[Backend] Backend failed to compute q_i0i1, q_i0i2, q_i0i3 and so on.");
         return false;
     }

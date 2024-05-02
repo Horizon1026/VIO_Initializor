@@ -92,7 +92,7 @@ private:
 
     // Backend initializor.
     bool TryToInitialize();
-    bool ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii,
+    bool PreintegrateBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii,
                                              std::vector<Vec3> &all_p_i0ii,
                                              std::vector<float> &all_dt_i0ii);
     bool ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &all_q_i0ii, const std::vector<Vec3> &all_p_i0ii,

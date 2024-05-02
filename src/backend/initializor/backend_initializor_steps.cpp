@@ -4,8 +4,10 @@
 
 namespace VIO {
 
-bool Backend::ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii, std::vector<Vec3> &all_p_i0ii, std::vector<float> &all_dt_i0ii) {
+bool Backend::PreintegrateBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii, std::vector<Vec3> &all_p_i0ii, std::vector<float> &all_dt_i0ii) {
     RETURN_FALSE_IF(data_manager_->visual_local_map()->frames().empty());
+
+    // Do some preparation.
     all_q_i0ii.clear();
     all_p_i0ii.clear();
     all_dt_i0ii.clear();
@@ -13,25 +15,37 @@ bool Backend::ComputeRotationBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii,
     all_p_i0ii.reserve(data_manager_->imu_based_frames().size());
     all_dt_i0ii.reserve(data_manager_->imu_based_frames().size());
 
-    // Compute relative rotation between each frame.
-    for (auto &imu_based_frame : data_manager_->imu_based_frames()) {
-        RecomputeImuPreintegrationBlock(Vec3::Zero(), Vec3::Zero(), imu_based_frame);
-    }
+    // Create a new imu preintegraion block.
+    auto imu_preint_block = data_manager_->imu_based_frames().front().imu_preint_block;
+    imu_preint_block.Reset();
+    imu_preint_block.bias_accel() = Vec3::Zero();
+    imu_preint_block.bias_gyro() = Vec3::Zero();
+    imu_preint_block.SetImuNoiseSigma(imu_model_->options().kAccelNoiseSigma,
+                                      imu_model_->options().kGyroNoiseSigma,
+                                      imu_model_->options().kAccelRandomWalkSigma,
+                                      imu_model_->options().kGyroRandomWalkSigma);
 
     // Compute relative rotation based on first imu frame.
     for (auto &imu_based_frame : data_manager_->imu_based_frames()) {
-        if (all_q_i0ii.empty()) {
+        if (imu_based_frame.time_stamp_s == data_manager_->imu_based_frames().front().time_stamp_s) {
             all_q_i0ii.emplace_back(Quat::Identity());
             all_p_i0ii.emplace_back(Vec3::Zero());
             all_dt_i0ii.emplace_back(0.0f);
         } else {
-            const Quat q_i0ii = all_q_i0ii.back() * imu_based_frame.imu_preint_block.q_ij();
-            all_q_i0ii.emplace_back(q_i0ii);
-            const Vec3 p_i0ii = all_p_i0ii.back() + imu_based_frame.imu_preint_block.p_ij();
-            all_p_i0ii.emplace_back(p_i0ii);
-            const float dt = all_dt_i0ii.back() + imu_based_frame.imu_preint_block.integrate_time_s();
-            all_dt_i0ii.emplace_back(dt);
+            const uint32_t max_idx = imu_based_frame.packed_measure->imus.size();
+            for (uint32_t i = 1; i < max_idx; ++i) {
+                imu_preint_block.Propagate(*imu_based_frame.packed_measure->imus[i - 1], *imu_based_frame.packed_measure->imus[i]);
+            }
+
+            all_q_i0ii.emplace_back(imu_preint_block.q_ij());
+            all_p_i0ii.emplace_back(imu_preint_block.p_ij());
+            all_dt_i0ii.emplace_back(imu_preint_block.integrate_time_s());
         }
+    }
+
+    // Debug.
+    for (uint32_t i = 0; i < all_q_i0ii.size(); ++i) {
+        ReportInfo("q_i0ii " << LogQuat(all_q_i0ii[i]) << ", p_i0ii " << LogVec(all_p_i0ii[i]) << ", dt_i0ii " << all_dt_i0ii[i] << "s.");
     }
 
     return true;
@@ -77,9 +91,8 @@ bool Backend::ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &
         }
 
         // Solve linear function.
-        ReportInfo("A and b is\n" << A << "\n" << LogVec(b));
         const Vec9 x = (A.transpose() * A).inverse() * A.transpose() * b;
-        ReportInfo("solved x " << LogVec(x));
+        ReportInfo("x " << LogVec(x));
     }
 
     return true;

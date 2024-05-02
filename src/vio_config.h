@@ -75,7 +75,6 @@ struct VioOptionsOfDataManager {
     std::vector<Vec3> all_t_ic = {};
 
     uint32_t max_num_of_stored_key_frames = 0;
-    float max_time_s_of_imu_preintegration_block = 0.0f;
     bool enable_recording_curve_binlog = false;
     std::string log_file_name;
 };

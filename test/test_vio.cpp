@@ -234,8 +234,7 @@ void ConfigAllComponentsOfVio()
     const Vec3 p_i_cr = Vec3(-0.0198435579556, 0.0453689425024, 0.00786212447038);
     vio.options().data_manager.all_R_ic.emplace_back(R_i_cr);
     vio.options().data_manager.all_t_ic.emplace_back(p_i_cr);
-    vio.options().data_manager.max_num_of_stored_key_frames = 8;
-    vio.options().data_manager.max_time_s_of_imu_preintegration_block = 10.0f;
+    vio.options().data_manager.max_num_of_stored_key_frames = 6;
     vio.options().data_manager.enable_recording_curve_binlog = true;
     vio.options().data_manager.log_file_name = "data_manager.binlog";
 
