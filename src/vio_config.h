@@ -57,6 +57,7 @@ struct VioOptionsOfFrontend {
 };
 
 struct VioOptionsOfBackend {
+    Vec3 gravity_w = Vec3::Zero();
     bool enable_recording_curve_binlog = false;
     std::string log_file_name;
 };

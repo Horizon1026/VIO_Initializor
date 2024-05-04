@@ -124,6 +124,7 @@ bool Vio::ConfigComponentOfFrontend() {
 bool Vio::ConfigComponentOfBackend() {
     // Config backend.
     backend_ = std::make_unique<Backend>();
+    backend_->options().kGravityInWordFrame = options_.backend.gravity_w;
     backend_->options().kEnableRecordBinaryCurveLog = options_.backend.enable_recording_curve_binlog;
     RETURN_FALSE_IF_FALSE(backend_->Configuration(options_.log_file_root_name + options_.backend.log_file_name));
 

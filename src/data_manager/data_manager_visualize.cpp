@@ -232,7 +232,7 @@ void DataManager::ShowMatrixImage(const std::string &title, const Mat &matrix) {
     const uint32_t scale = 2;
     uint8_t *buf = (uint8_t *)malloc(matrix.rows() * matrix.cols() * scale * scale * sizeof(uint8_t));
     GrayImage image_matrix(buf, matrix.rows() * scale, matrix.cols() * scale, true);
-    ImagePainter::ConvertMatrixToImage<float>(matrix, image_matrix, 1.0f, scale);
+    ImagePainter::ConvertMatrixToImage<float>(matrix, image_matrix, 0.1f, scale);
     Visualizor::ShowImage(title, image_matrix);
     Visualizor::WaitKey(1);
 }
