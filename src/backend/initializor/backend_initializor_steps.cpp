@@ -95,7 +95,7 @@ bool Backend::ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &
             // x = [p_i0_f1, p_i0_f2, p_i0_f3, ..., v_i0i0, gravity_i0]
             A.block<2, 3>(row_index, feature_index * 3) = upsilon;
             A.block<2, 3>(row_index, col_index_of_v_i0i0) = - upsilon * dt;
-            A.block<2, 3>(row_index, col_index_of_v_i0i0 + 3) = upsilon * dt * dt * 0.5f;
+            A.block<2, 3>(row_index, col_index_of_v_i0i0 + 3) = 0.5f * upsilon * dt * dt;
             b.segment<2>(row_index) = upsilon * p_i0ii + gama * q_ic.toRotationMatrix().transpose() * p_ic;
             // Prepare for next observation.
             ++vector_index;
@@ -107,7 +107,7 @@ bool Backend::ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &
     if (!TryToEstimageGravityWithConstraintOfNorm(A, b, x)) {
         // Solve linear function Ax = b without constraint.
         x = (A.transpose() * A).colPivHouseholderQr().solve(A.transpose() * b);
-        ReportInfo("[Backend] Initializor failed to esgimate gravity with constraint. Directly estimate them.");
+        ReportWarn("[Backend] Initializor failed to esgimate gravity with constraint. Directly estimate them.");
     }
     g_i0 = x.segment<3>(col_index_of_v_i0i0 + 3);
     v_i0i0 = x.segment<3>(col_index_of_v_i0i0);
