@@ -1,5 +1,5 @@
-#ifndef _VIO_STEREO_SCHUR_VINS_CONFIG_H_
-#define _VIO_STEREO_SCHUR_VINS_CONFIG_H_
+#ifndef _VIO_INITIALIZOR_CONFIG_H_
+#define _VIO_INITIALIZOR_CONFIG_H_
 
 #include "datatype_basic.h"
 #include "string"
@@ -58,8 +58,6 @@ struct VioOptionsOfFrontend {
 
 struct VioOptionsOfBackend {
     Vec3 gravity_w = Vec3::Zero();
-    bool enable_recording_curve_binlog = false;
-    std::string log_file_name;
 };
 
 struct VioOptionsOfDataLoader {
@@ -97,4 +95,4 @@ struct VioOptions {
 
 }
 
-#endif // end of _VIO_STEREO_SCHUR_VINS_CONFIG_H_
+#endif // end of _VIO_INITIALIZOR_CONFIG_H_

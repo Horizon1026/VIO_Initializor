@@ -1,4 +1,4 @@
-# VIO_Stereo_SchurVINS
+# VIO_Initializor
 A simple visual-inertial odometry reconstructed from schur-vins.
 
 # Components

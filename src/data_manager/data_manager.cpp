@@ -86,6 +86,44 @@ FramesCorresbondence DataManager::GetCorresbondence(const int32_t frame_id_i, co
     return corres;
 }
 
+// Compute imu accel variance.
+float DataManager::ComputeImuAccelVariance() {
+    if (imu_based_frames_.empty()) {
+        return 0.0f;
+    }
+
+    // Compute mean accel vector.
+    Vec3 mean_accel = Vec3::Zero();
+    int32_t sample_cnt = 0;
+    for (const auto &frame : imu_based_frames_) {
+        CONTINUE_IF(frame.packed_measure == nullptr);
+        CONTINUE_IF(frame.packed_measure->imus.empty());
+        for (const auto &imu : frame.packed_measure->imus) {
+            mean_accel += imu->accel;
+            ++sample_cnt;
+        }
+    }
+    if (sample_cnt == 0) {
+        ReportError("[DataManager] Frames with bias have no imu measurements.");
+        return 0.0f;
+    }
+    mean_accel /= static_cast<float>(sample_cnt);
+
+    // Compute accel variance.
+    float variance = 0.0f;
+    for (const auto &frame : imu_based_frames_) {
+        CONTINUE_IF(frame.packed_measure == nullptr);
+        CONTINUE_IF(frame.packed_measure->imus.empty());
+        for (const auto &imu : frame.packed_measure->imus) {
+            const Vec3 diff = mean_accel - imu->accel;
+            variance += diff.squaredNorm();
+        }
+    }
+    variance /= static_cast<float>(sample_cnt);
+
+    return variance;
+}
+
 void DataManager::ControlSizeOfImuBasedFrames() {
     while (imu_based_frames_.size() >= options_.kMaxStoredKeyFrames) {
         imu_based_frames_.pop_front();

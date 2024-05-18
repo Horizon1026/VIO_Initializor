@@ -19,10 +19,11 @@ bool Backend::RunOnce() {
             ResetToReintialize();
             ReportColorWarn("[Backend] Backend failed to initialize. All states will be reset for reinitialization.");
         }
+    } else {
+        // Quit when initialized.
+        signals_.should_quit = true;
     }
 
-    // Record log.
-    RecordBackendLogStates();
     return true;
 }
 

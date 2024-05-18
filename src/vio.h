@@ -1,5 +1,5 @@
-#ifndef _VIO_STEREO_SCHUR_VINS_H_
-#define _VIO_STEREO_SCHUR_VINS_H_
+#ifndef _VIO_INITIALIZOR_H_
+#define _VIO_INITIALIZOR_H_
 
 #include "vio_config.h"
 
@@ -71,4 +71,4 @@ private:
 
 }
 
-#endif // end of _VIO_STEREO_SCHUR_VINS_H_
+#endif // end of _VIO_INITIALIZOR_H_

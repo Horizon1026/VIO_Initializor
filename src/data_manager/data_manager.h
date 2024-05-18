@@ -1,5 +1,5 @@
-#ifndef _VIO_STEREO_SCHUR_VINS_DATA_MANAGER_H_
-#define _VIO_STEREO_SCHUR_VINS_DATA_MANAGER_H_
+#ifndef _VIO_INITIALIZOR_DATA_MANAGER_H_
+#define _VIO_INITIALIZOR_DATA_MANAGER_H_
 
 #include "datatype_basic.h"
 #include "covisible_graph.h"
@@ -86,6 +86,9 @@ public:
     // Compute correspondence between two frames.
     FramesCorresbondence GetCorresbondence(const int32_t frame_id_i, const int32_t frame_id_j);
 
+    // Compute imu accel variance.
+    float ComputeImuAccelVariance();
+
     // Visualizor of managed data.
     void ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const int32_t delay_ms = 0);
     void ShowLocalMapFramesAndFeatures(const int32_t feature_id = -1, const int32_t camera_id = 0, const int32_t delay_ms = 0);
@@ -128,4 +131,4 @@ private:
 
 }
 
-#endif // end of _VIO_STEREO_SCHUR_VINS_DATA_MANAGER_H_
+#endif // end of _VIO_INITIALIZOR_DATA_MANAGER_H_

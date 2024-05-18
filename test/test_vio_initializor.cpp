@@ -208,8 +208,6 @@ void ConfigAllComponentsOfVio()
     /* VioOptionsOfBackend */
     // Fill options of backend.
     vio.options().backend.gravity_w = Vec3(0, 0, 9.81f);
-    vio.options().backend.enable_recording_curve_binlog = true;
-    vio.options().backend.log_file_name = "backend.binlog";
 
     /* VioOptionsOfDataLoader */
     // Fill options of data loader.

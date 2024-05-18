@@ -1,5 +1,5 @@
-#ifndef _VIO_STEREO_SCHUR_VINS_BACKEND_H_
-#define _VIO_STEREO_SCHUR_VINS_BACKEND_H_
+#ifndef _VIO_INITIALIZOR_BACKEND_H_
+#define _VIO_INITIALIZOR_BACKEND_H_
 
 #include "datatype_basic.h"
 
@@ -8,9 +8,6 @@
 
 #include "visual_frontend.h"
 #include "general_graph_optimizor.h"
-
-#include "backend_log.h"
-#include "binary_data_log.h"
 
 namespace VIO {
 
@@ -57,6 +54,36 @@ struct BackendStates {
     } motion;
 };
 
+/* Vertices and edges for estimation and marginalization. */
+struct BackendVertices {
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_cameras_p_ic;
+    std::vector<std::unique_ptr<VertexQuat<DorF>>> all_cameras_q_ic;
+
+    std::vector<uint32_t> all_frames_id;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_p_wi;
+    std::vector<std::unique_ptr<VertexQuat<DorF>>> all_frames_q_wi;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_p_wc;
+    std::vector<std::unique_ptr<VertexQuat<DorF>>> all_frames_q_wc;
+
+    std::vector<uint32_t> all_features_id;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_features_invdep;
+
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_v_wi;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_ba;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_bg;
+};
+
+struct BackendEdges {
+    std::vector<std::unique_ptr<Edge<DorF>>> all_prior_factors;
+    std::vector<std::unique_ptr<Edge<DorF>>> all_visual_factors;
+    std::vector<std::unique_ptr<Edge<DorF>>> all_imu_factors;
+};
+
+struct BackendGraph {
+    BackendVertices vertices;
+    BackendEdges edges;
+};
+
 /* Class Backend Declaration. */
 class Backend final {
 
@@ -68,9 +95,6 @@ public:
     bool RunOnce();
     void Reset();
     void ResetToReintialize();
-
-    // Backend log recorder.
-    bool Configuration(const std::string &log_file_name);
 
     // Reference for member variables.
     BackendOptions &options() { return options_; }
@@ -86,19 +110,15 @@ public:
     const BackendSignals &signals() const { return signals_; }
 
 private:
-    // Backend log recorder.
-    void RegisterLogPackages();
-    void RecordBackendLogStates();
-
     // Backend initializor.
     bool TryToInitialize();
-    bool PreintegrateBasedOnFirstImuFrame(std::vector<Quat> &all_q_i0ii,
-                                             std::vector<Vec3> &all_p_i0ii,
-                                             std::vector<float> &all_dt_i0ii);
-    bool ComputeVelocityGravityAndFeaturePosition(const std::vector<Quat> &all_q_i0ii, const std::vector<Vec3> &all_p_i0ii,
-        const std::vector<float> &all_dt_i0ii, Vec3 &v_i0i0, Vec3 &g_i0);
-    Vec7 ComputeDongsiCoeff(const Mat3 &D, const Vec3 &d, float gravity_norm);
-    bool TryToEstimageGravityWithConstraintOfNorm(const Mat &A, const Vec &b, Vec &x);
+    bool PrepareForPureVisualSfmByMonoView();
+    bool PrepareForPureVisualSfmByMultiView();
+    bool PerformPureVisualBundleAdjustment(const bool use_multi_view = false);
+    bool EstimateGyroBias();
+    bool EstimateVelocityGravityScaleIn3Dof(Vec3 &gravity_c0, float &scale);
+    bool EstimateVelocityGravityScaleIn2Dof(Vec3 &gravity_c0, Vec &all_v_ii);
+    bool SyncInitializedResult(const Vec3 &gravity_c0, const Vec &all_v_ii, const float &scale);
 
     // Backend data processor.
     bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
@@ -111,6 +131,27 @@ private:
     void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
                                          const Vec3 &bias_gyro,
                                          ImuBasedFrame &imu_based_frame);
+    bool SyncTwcToTwiInLocalMap();
+    bool SyncTwiToTwcInLocalMap();
+    TMat2<DorF> GetVisualObserveInformationMatrix();
+
+    // Backend graph manager.
+    void ClearGraph();
+    void AddAllCameraPosesInLocalMapToGraph();
+    bool AddAllFeatureInvdepsAndVisualFactorsToGraph(const bool add_factors_with_cam_ex,
+                                                     const bool use_multi_view = false,
+                                                     const bool use_only_solved_features = true);
+    void ConstructPureVisualGraphOptimizationProblem(Graph<DorF> &problem);
+    bool AllFeatureInvdepAndVisualFactorsOfCameraPosesToGraph(const FeatureType &feature,
+                                                              const float invdep,
+                                                              const TMat2<DorF> &visual_info_matrix,
+                                                              const uint32_t max_frame_id,
+                                                              const bool use_multi_view = false);
+    bool AllFeatureInvdepAndVisualFactorsOfImuPosesToGraph(const FeatureType &feature,
+                                                           const float invdep,
+                                                           const TMat2<DorF> &visual_info_matrix,
+                                                           const uint32_t max_frame_id,
+                                                           const bool use_multi_view = false);
 
 private:
     // Options of backend.
@@ -122,15 +163,15 @@ private:
     // Signals of backend.
     BackendSignals signals_;
 
+    // Graph of backend.
+    BackendGraph graph_;
+
     // Register some relative components.
     VisualFrontend *visual_frontend_ = nullptr;
     DataManager *data_manager_ = nullptr;
     std::unique_ptr<Imu> imu_model_ = nullptr;
-
-    // Record log.
-    BinaryDataLog logger_;
 };
 
 }
 
-#endif // end of _VIO_STEREO_SCHUR_VINS_BACKEND_H_
+#endif // end of _VIO_INITIALIZOR_BACKEND_H_
