@@ -131,8 +131,6 @@ private:
     void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
                                          const Vec3 &bias_gyro,
                                          ImuBasedFrame &imu_based_frame);
-    bool SyncTwcToTwiInLocalMap();
-    bool SyncTwiToTwcInLocalMap();
     TMat2<DorF> GetVisualObserveInformationMatrix();
 
     // Backend graph manager.

@@ -88,6 +88,9 @@ public:
 
     // Compute imu accel variance.
     float ComputeImuAccelVariance();
+    // Sync local map.
+    bool SyncTwcToTwiInLocalMap();
+    bool SyncTwiToTwcInLocalMap();
 
     // Visualizor of managed data.
     void ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const int32_t delay_ms = 0);
