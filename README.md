@@ -12,6 +12,7 @@ Several initializor of visual-inertial odometry.
     - [x] Initialization. (VINS-Mono)
     - [x] Initialization. (DRT-VIO-Init)
     - [ ] Initialization. (OpenVINS)
+    - [ ] Initialization. (ORB-SLAM3)
 
 # Dependence
 - Slam_Utility
