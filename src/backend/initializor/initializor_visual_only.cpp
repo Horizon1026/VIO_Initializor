@@ -1,8 +1,8 @@
 #include "backend.h"
 #include "slam_operations.h"
-
 #include "geometry_epipolar.h"
 #include "geometry_triangulation.h"
+#include "visual_edges.h"
 
 namespace VIO {
 
@@ -156,45 +156,132 @@ bool Backend::PrepareForPureVisualSfmByMultiView() {
     return true;
 }
 
-bool Backend::PerformPureVisualBundleAdjustment(const bool use_multi_view) {
-    // Clear all vectors of vertices and edges.
-    ClearGraph();
-    // [Vertices] Camera pose of each frame in local map.
-    AddAllCameraPosesInLocalMapToGraph();
+bool Backend::PerformPureVisualBundleAdjustment() {
+    std::vector<uint32_t> all_frames_id;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_frames_p_wc;
+    std::vector<std::unique_ptr<VertexQuat<DorF>>> all_frames_q_wc;
+
+    // [Vertices] Camera pose of each frame.
+    for (const auto &frame : data_manager_->visual_local_map()->frames()) {
+        all_frames_id.emplace_back(frame.id());
+        all_frames_p_wc.emplace_back(std::make_unique<Vertex<DorF>>(3, 3));
+        all_frames_p_wc.back()->param() = frame.p_wc().cast<DorF>();
+        all_frames_p_wc.back()->name() = std::string("p_wc") + std::to_string(frame.id());
+        all_frames_q_wc.emplace_back(std::make_unique<VertexQuat<DorF>>(4, 3));
+        all_frames_q_wc.back()->param() << frame.q_wc().w(), frame.q_wc().x(), frame.q_wc().y(), frame.q_wc().z();
+        all_frames_q_wc.back()->name() = std::string("q_wc") + std::to_string(frame.id());
+    }
+
     // [Vertices] Inverse depth of each feature.
     // [Edges] Visual reprojection factor.
-    const bool add_factors_with_cam_ex = false;
-    AddAllFeatureInvdepsAndVisualFactorsToGraph(add_factors_with_cam_ex, use_multi_view);
+    // Compute information matrix of visual observation.
+    const TMat2<DorF> visual_info_matrix = GetVisualObserveInformationMatrix();
+
+    // [Vertices] Inverse depth of each feature.
+    // [Edges] Visual reprojection factor.
+    std::vector<uint32_t> all_features_id;
+    std::vector<std::unique_ptr<Vertex<DorF>>> all_features_invdep;
+    std::vector<std::unique_ptr<Edge<DorF>>> all_visual_factors;
+    for (const auto &pair : data_manager_->visual_local_map()->features()) {
+        const auto &feature = pair.second;
+        // Select features which has at least two observations.
+        CONTINUE_IF(feature.observes().size() < 2);
+        // Select features which is solved successfully.
+        CONTINUE_IF(feature.status() != FeatureSolvedStatus::kSolved);
+
+        // Compute inverse depth by p_w of this feature.
+        const auto &frame = data_manager_->visual_local_map()->frame(feature.first_frame_id());
+        const Vec3 p_c = frame->q_wc().inverse() * (feature.param() - frame->p_wc());
+        const float depth = p_c.z() < options_.kMinValidFeatureDepthInMeter ? options_.kDefaultFeatureDepthInMeter : p_c.z();
+        const float invdep = 1.0f / depth;
+        CONTINUE_IF(std::isinf(invdep) || std::isnan(invdep));
+
+        // Determine the range of all observations of this feature.
+        const uint32_t min_frame_id = feature.first_frame_id();
+        const uint32_t max_frame_id = feature.final_frame_id();
+        const uint32_t offset = data_manager_->visual_local_map()->frames().front().id();
+
+        // Add vertex of feature invdep.
+        all_features_id.emplace_back(feature.id());
+        all_features_invdep.emplace_back(std::make_unique<Vertex<DorF>>(1, 1));
+        all_features_invdep.back()->param() = TVec1<DorF>(invdep);
+        all_features_invdep.back()->name() = std::string("invdep ") + std::to_string(feature.id());
+
+        // Extract observation of this feature in first frame which observes it.
+        const auto &obv_in_ref = feature.observe(min_frame_id);
+        Vec4 observe_vector = Vec4::Zero();
+        observe_vector.head<2>() = obv_in_ref[0].rectified_norm_xy;
+
+        // In order to add other edges, iterate all observations of this feature.
+        for (uint32_t idx = min_frame_id + 1; idx <= max_frame_id; ++idx) {
+            BREAK_IF(idx > feature.final_frame_id());
+            const auto &obv_in_cur = feature.observe(idx);
+            observe_vector.tail<2>() = obv_in_cur[0].rectified_norm_xy;
+
+            // Add edges of visual reprojection factor, considering one camera views two frames.
+            all_visual_factors.emplace_back(std::make_unique<EdgeFeatureInvdepToNormPlane<DorF>>());
+            auto &visual_reproj_factor = all_visual_factors.back();
+            visual_reproj_factor->SetVertex(all_features_invdep.back().get(), 0);
+            visual_reproj_factor->SetVertex(all_frames_p_wc[min_frame_id - offset].get(), 1);
+            visual_reproj_factor->SetVertex(all_frames_q_wc[min_frame_id - offset].get(), 2);
+            visual_reproj_factor->SetVertex(all_frames_p_wc[idx - offset].get(), 3);
+            visual_reproj_factor->SetVertex(all_frames_q_wc[idx - offset].get(), 4);
+            visual_reproj_factor->observation() = observe_vector.cast<DorF>();
+            visual_reproj_factor->information() = visual_info_matrix;
+            visual_reproj_factor->kernel() = std::make_unique<KernelHuber<DorF>>(static_cast<DorF>(0.5));
+            visual_reproj_factor->name() = std::string("pure visual ba");
+            RETURN_FALSE_IF(!visual_reproj_factor->SelfCheck());
+        }
+    }
+
     // Fix first two camera frame position.
     for (uint32_t i = 0; i < 2; ++i) {
-        graph_.vertices.all_frames_p_wc[i]->SetFixed(true);
+        all_frames_p_wc[i]->SetFixed(true);
     }
 
     // Construct pure visual bundle adjustment problem.
     Graph<DorF> graph_optimization_problem;
-    ConstructPureVisualGraphOptimizationProblem(graph_optimization_problem);
+    // Add all vertices into graph.
+    for (uint32_t i = 0; i < all_frames_p_wc.size(); ++i) {
+        graph_optimization_problem.AddVertex(all_frames_p_wc[i].get());
+        graph_optimization_problem.AddVertex(all_frames_q_wc[i].get());
+    }
+    for (auto &vertex : all_features_invdep) {
+        graph_optimization_problem.AddVertex(vertex.get(), false);
+    }
+    // Add all edges into graph.
+    for (auto &edge : all_visual_factors) {
+        graph_optimization_problem.AddEdge(edge.get());
+    }
+
+    // Report information.
+    ReportInfo("[Backend] Pure visual BA adds " <<
+        all_frames_p_wc.size() << " frames_p_wc, " <<
+        all_frames_q_wc.size() << " frames_q_wc, " <<
+        all_features_invdep.size() << " features_invdep, " <<
+        all_visual_factors.size() << " visual_reproj_factors.");
 
     // Construct solver to solve this problem.
     SolverLm<DorF> solver;
-    solver.options().kEnableReportEachIteration = false;
+    solver.options().kEnableReportEachIteration = true;
     solver.options().kMaxConvergedSquaredStepLength = static_cast<DorF>(1e-4);
     solver.options().kMaxCostTimeInSecond = 0.05f;
     solver.problem() = &graph_optimization_problem;
     solver.Solve(false);
 
     // Update all states into visual local map.
-    for (uint32_t i = 0; i < graph_.vertices.all_frames_p_wc.size(); ++i) {
-        auto frame_ptr = data_manager_->visual_local_map()->frame(graph_.vertices.all_frames_id[i]);
-        frame_ptr->p_wc() = graph_.vertices.all_frames_p_wc[i]->param().cast<float>();
-        const auto param_q = graph_.vertices.all_frames_q_wc[i]->param();
+    for (uint32_t i = 0; i < all_frames_p_wc.size(); ++i) {
+        auto frame_ptr = data_manager_->visual_local_map()->frame(all_frames_id[i]);
+        frame_ptr->p_wc() = all_frames_p_wc[i]->param().cast<float>();
+        const auto param_q = all_frames_q_wc[i]->param();
         frame_ptr->q_wc() = Quat(param_q(0), param_q(1), param_q(2), param_q(3));
     }
 
-    for (uint32_t i = 0; i < graph_.vertices.all_features_id.size(); ++i) {
-        auto feature_ptr = data_manager_->visual_local_map()->feature(graph_.vertices.all_features_id[i]);
+    for (uint32_t i = 0; i < all_features_id.size(); ++i) {
+        auto feature_ptr = data_manager_->visual_local_map()->feature(all_features_id[i]);
         const auto &frame_ptr = data_manager_->visual_local_map()->frame(feature_ptr->first_frame_id());
         const auto &norm_xy = feature_ptr->observes().front()[0].rectified_norm_xy;
-        const float invdep = graph_.vertices.all_features_invdep[i]->param()(0);
+        const float invdep = all_features_invdep[i]->param()(0);
         Vec3 p_c = Vec3(norm_xy.x(), norm_xy.y(), 1.0f) / invdep;
 
         if (std::isnan(p_c.z()) || std::isinf(p_c.z())) {

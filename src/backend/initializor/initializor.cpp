@@ -36,7 +36,7 @@ bool Backend::TryToInitialize() {
     }
 
     // Perform pure visual bundle adjustment.
-    if (!PerformPureVisualBundleAdjustment(false)) {
+    if (!PerformPureVisualBundleAdjustment()) {
         ReportError("[Backend] Backend failed to perform pure visual bundle adjustment.");
         return false;
     }
