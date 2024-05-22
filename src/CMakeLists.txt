@@ -11,8 +11,14 @@ endif()
 if ( NOT TARGET lib_vio_initializor_frontend )
     add_subdirectory( ${SRC_PATH}/frontend ${PROJECT_SOURCE_DIR}/build/lib_vio_initializor_frontend )
 endif()
+
+# Select target initializor of backend.
+set( TARGET_INITIALIZOR
+    # backend_vins_mono
+    backend_drt_vio_init
+)
 if ( NOT TARGET lib_vio_initializor_backend )
-    add_subdirectory( ${SRC_PATH}/backend ${PROJECT_SOURCE_DIR}/build/lib_vio_initializor_backend )
+    add_subdirectory( ${SRC_PATH}/${TARGET_INITIALIZOR} ${PROJECT_SOURCE_DIR}/build/lib_vio_initializor_backend )
 endif()
 
 add_library( lib_vio_initializor ${AUX_SRC_VIO_INITIALIZOR} )

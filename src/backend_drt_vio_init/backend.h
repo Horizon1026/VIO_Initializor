@@ -2,10 +2,8 @@
 #define _VIO_INITIALIZOR_BACKEND_H_
 
 #include "datatype_basic.h"
-
 #include "imu.h"
 #include "data_manager.h"
-
 #include "visual_frontend.h"
 #include "general_graph_optimizor.h"
 
