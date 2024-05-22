@@ -144,4 +144,13 @@ TMat2<DorF> Backend::GetVisualObserveInformationMatrix() {
     return visual_observe_info_vec.asDiagonal();
 }
 
+bool Backend::TriangulizeAllVisualFeatures() {
+    for (auto &pair : data_manager_->visual_local_map()->features()) {
+        auto &feature = pair.second;
+        CONTINUE_IF(feature.observes().size() < 2);
+        TryToSolveFeaturePositionByFramesObservingIt(feature.id(), feature.first_frame_id(), feature.final_frame_id());
+    }
+    return true;
+}
+
 }

@@ -80,13 +80,25 @@ public:
 private:
     // Backend initializor.
     bool TryToInitialize();
-    bool PrepareForPureVisualSfmByMonoView();
-    bool PrepareForPureVisualSfmByMultiView();
-    bool PerformPureVisualBundleAdjustment();
-    bool EstimateGyroBias();
-    bool EstimateVelocityGravityScaleIn3Dof(Vec3 &gravity_c0, float &scale);
-    bool EstimateVelocityGravityScaleIn2Dof(Vec3 &gravity_c0, Vec &all_v_ii);
-    bool SyncInitializedResult(const Vec3 &gravity_c0, const Vec &all_v_ii, const float &scale);
+    bool EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id,
+                                           const uint32_t cur_frame_id,
+                                           const uint32_t min_frame_id,
+                                           std::vector<Vec2> &ref_norm_xy,
+                                           std::vector<Vec2> &cur_norm_xy,
+                                           Quat &q_cr);
+    // Estimate gyro bias for initialization.
+    bool EstimateGyroBiasAndRotationForInitialization();
+    bool EstimateGyroBiasByMethodOneForInitialization();
+    bool EstimateGyroBiasByMethodTwoForInitialization();
+    bool EstimateGyroBiasByMethodThreeForInitialization();
+    // Estimate velocity and gravity for initialization.
+    bool EstimateVelocityAndGravityForInitialization(Vec3 &gravity_i0);
+    bool SelectTwoFramesWithMaxParallax(CovisibleGraphType *local_map, const FeatureType &feature, int32_t &frame_id_l, int32_t &frame_id_r);
+    bool ComputeImuPreintegrationBasedOnFirstFrameForInitialization(std::vector<ImuPreintegrateBlock<>> &imu_blocks);
+    bool ConstructLigtFunction(const std::vector<ImuPreintegrateBlock<>> &imu_blocks, Mat6 &A, Vec6 &b, float &Q);
+    bool RefineGravityForInitialization(const Mat &M, const Vec &m, const float Q, const float gravity_mag, Vec &rhs);
+    bool PropagateAllBasedOnFirstCameraFrameForInitializaion(const std::vector<ImuPreintegrateBlock<>> &imu_blocks, const Vec3 &v_i0i0, const Vec3 &gravity_i0);
+    bool TransformAllStatesToWorldFrameForInitialization(const Vec3 &gravity_i0);
 
     // Backend data processor.
     bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
@@ -100,6 +112,7 @@ private:
                                          const Vec3 &bias_gyro,
                                          ImuBasedFrame &imu_based_frame);
     TMat2<DorF> GetVisualObserveInformationMatrix();
+    bool TriangulizeAllVisualFeatures();
 
 private:
     // Options of backend.
