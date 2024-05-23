@@ -46,7 +46,7 @@ bool Backend::EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id,
 }
 
 bool Backend::EstimateGyroBiasByMethodOneForInitialization() {
-    ReportInfo("[Backend] Try to estimate bias of gyro by Method 1.");
+    ReportInfo("[Backend] Try to estimate bias of gyro by Method 1, which is the same as VINS-Mono.");
 
     // Determine the scope of all frames.
     const uint32_t max_frames_idx = data_manager_->visual_local_map()->frames().back().id();
@@ -111,7 +111,7 @@ bool Backend::EstimateGyroBiasByMethodOneForInitialization() {
 }
 
 bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
-    ReportInfo("[Backend] Try to estimate bias of gyro by Method 2 (not valid now).");
+    ReportInfo("[Backend] Try to estimate bias of gyro by Method 2, which is the raw version from HeYijia, but is not valid now.");
 
     // Localize the left camera extrinsic.
     const Quat q_ic = data_manager_->camera_extrinsics().front().q_ic;
@@ -214,7 +214,7 @@ bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
 }
 
 bool Backend::EstimateGyroBiasByMethodThreeForInitialization() {
-    ReportInfo("[Backend] Try to estimate bias of gyro by Method 3.");
+    ReportInfo("[Backend] Try to estimate bias of gyro by Method 3, which is a brand new method from me.");
 
     // Determine the scope of all frames.
     const uint32_t max_frames_idx = data_manager_->visual_local_map()->frames().back().id();

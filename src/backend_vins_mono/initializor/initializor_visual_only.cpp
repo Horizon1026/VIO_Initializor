@@ -263,7 +263,7 @@ bool Backend::PerformPureVisualBundleAdjustment() {
 
     // Construct solver to solve this problem.
     SolverLm<DorF> solver;
-    solver.options().kEnableReportEachIteration = true;
+    solver.options().kEnableReportEachIteration = false;
     solver.options().kMaxConvergedSquaredStepLength = static_cast<DorF>(1e-4);
     solver.options().kMaxCostTimeInSecond = 0.05f;
     solver.problem() = &graph_optimization_problem;

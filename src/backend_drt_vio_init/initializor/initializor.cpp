@@ -29,21 +29,15 @@ bool Backend::TryToInitialize() {
     }
 
     // Transform all states from frame c0(camera) to frame w(world). The z-axis of frame w must be upward.
-    if (!TransformAllStatesToWorldFrameForInitialization(gravity_i0)) {
+    if (!SyncInitializedResult(gravity_i0)) {
         ReportError("[Backend] Backend failed to transform from i0 to w frame.");
-        return false;
-    }
-
-    // Try to triangulize all features of vision.
-    if (!TriangulizeAllVisualFeatures()) {
-        ReportError("[Backend] Backend failed to triangulize features.");
         return false;
     }
 
     return true;
 }
 
-bool Backend::TransformAllStatesToWorldFrameForInitialization(const Vec3 &gravity_i0) {
+bool Backend::SyncInitializedResult(const Vec3 &gravity_i0) {
     // Compute the gravity vector based on frame c0.
     const Quat q_ic = data_manager_->camera_extrinsics().front().q_ic;
     const Vec3 gravity_c0 = q_ic.inverse() * gravity_i0;
@@ -71,6 +65,11 @@ bool Backend::TransformAllStatesToWorldFrameForInitialization(const Vec3 &gravit
         ++it;
     }
 
+    // Try to triangulize all features of vision.
+    if (!TriangulizeAllVisualFeatures()) {
+        ReportError("[Backend] Backend failed to triangulize features.");
+        return false;
+    }
     return true;
 }
 
