@@ -1,6 +1,6 @@
 aux_source_directory( . AUX_SRC_VIO_INITIALIZOR )
 
-# Add all components of slam utility.
+# Add all relative components of slam utility.
 set( SRC_PATH ${PROJECT_SOURCE_DIR}/../VIO_Initializor/src )
 if ( NOT TARGET lib_vio_initializor_data_loader )
     add_subdirectory( ${SRC_PATH}/data_loader ${PROJECT_SOURCE_DIR}/build/lib_vio_initializor_data_loader )
@@ -14,8 +14,8 @@ endif()
 
 # Select target initializor of backend.
 set( TARGET_INITIALIZOR
-    # backend_vins_mono
-    backend_drt_vio_init
+    backend_vins_mono
+    # backend_drt_vio_init
 )
 if ( NOT TARGET lib_vio_initializor_backend )
     add_subdirectory( ${SRC_PATH}/${TARGET_INITIALIZOR} ${PROJECT_SOURCE_DIR}/build/lib_vio_initializor_backend )
