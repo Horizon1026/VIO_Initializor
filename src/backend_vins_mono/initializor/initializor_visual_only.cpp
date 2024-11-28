@@ -167,7 +167,7 @@ bool Backend::PerformPureVisualBundleAdjustment() {
         all_frames_p_wc.emplace_back(std::make_unique<Vertex<DorF>>(3, 3));
         all_frames_p_wc.back()->param() = frame.p_wc().cast<DorF>();
         all_frames_p_wc.back()->name() = std::string("p_wc") + std::to_string(frame.id());
-        all_frames_q_wc.emplace_back(std::make_unique<VertexQuat<DorF>>(4, 3));
+        all_frames_q_wc.emplace_back(std::make_unique<VertexQuat<DorF>>());
         all_frames_q_wc.back()->param() << frame.q_wc().w(), frame.q_wc().x(), frame.q_wc().y(), frame.q_wc().z();
         all_frames_q_wc.back()->name() = std::string("q_wc") + std::to_string(frame.id());
     }
