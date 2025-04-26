@@ -54,7 +54,7 @@ bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature
 
     using namespace VISION_GEOMETRY;
     PointTriangulator solver;
-    solver.options().kMethod = PointTriangulator::TriangulationMethod::kAnalytic;
+    solver.options().kMethod = PointTriangulator::Method::kAnalytic;
 
     std::vector<Quat> all_q_wc;
     std::vector<Vec3> all_p_wc;
