@@ -1,8 +1,8 @@
 #include "data_manager.h"
+#include "image_painter.h"
+#include "slam_basic_math.h"
 #include "slam_log_reporter.h"
 #include "slam_memory.h"
-#include "slam_basic_math.h"
-#include "image_painter.h"
 #include "visualizor_2d.h"
 #include "visualizor_3d.h"
 
@@ -43,9 +43,7 @@ RgbPixel DataManager::GetFeatureColor(const FeatureType &feature) {
     return pixel_color;
 }
 
-void DataManager::ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id,
-                                                   const uint32_t cur_frame_id,
-                                                   const int32_t delay_ms) {
+void DataManager::ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const int32_t delay_ms) {
     // Get covisible features only in left camera.
     std::vector<FeatureType *> covisible_features;
     if (!visual_local_map_->GetCovisibleFeatures(ref_frame_id, cur_frame_id, covisible_features)) {
@@ -55,7 +53,7 @@ void DataManager::ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id,
 
     std::vector<Vec2> ref_pixel_uv;
     std::vector<Vec2> cur_pixel_uv;
-    for (const auto &feature_ptr : covisible_features) {
+    for (const auto &feature_ptr: covisible_features) {
         ref_pixel_uv.emplace_back(feature_ptr->observe(ref_frame_id)[0].raw_pixel_uv);
         cur_pixel_uv.emplace_back(feature_ptr->observe(cur_frame_id)[0].raw_pixel_uv);
     }
@@ -66,9 +64,9 @@ void DataManager::ShowFeaturePairsBetweenTwoFrames(const uint32_t ref_frame_id,
 
     // Draw tracking results.
     const std::vector<uint8_t> tracked_status(ref_pixel_uv.size(), 1);
-    Visualizor2D::ShowImageWithTrackedFeatures(std::string("Raw image [ ") + std::to_string(ref_frame_id) + std::string(" | ") +
-        std::to_string(cur_frame_id) + std::string(" ] covisible features"), ref_image, cur_image,
-        ref_pixel_uv, cur_pixel_uv, tracked_status);
+    Visualizor2D::ShowImageWithTrackedFeatures(std::string("Raw image [ ") + std::to_string(ref_frame_id) + std::string(" | ") + std::to_string(cur_frame_id) +
+                                                   std::string(" ] covisible features"),
+                                               ref_image, cur_image, ref_pixel_uv, cur_pixel_uv, tracked_status);
 
     Visualizor2D::WaitKey(delay_ms);
 }
@@ -79,9 +77,8 @@ void DataManager::ShowLocalMapFramesAndFeatures(const int32_t feature_id, const 
 
     // Memory allocation.
     const int32_t cols_of_images = kMaxImageNumInOneRow;
-    const int32_t rows_of_images = options_.kMaxStoredKeyFrames % cols_of_images == 0 ?
-        options_.kMaxStoredKeyFrames / cols_of_images :
-        options_.kMaxStoredKeyFrames / cols_of_images + 1;
+    const int32_t rows_of_images =
+        options_.kMaxStoredKeyFrames % cols_of_images == 0 ? options_.kMaxStoredKeyFrames / cols_of_images : options_.kMaxStoredKeyFrames / cols_of_images + 1;
     const int32_t image_cols = visual_local_map_->frames().front().raw_images()[camera_id].cols();
     const int32_t image_rows = visual_local_map_->frames().front().raw_images()[camera_id].rows();
     const int32_t show_image_cols = image_cols * cols_of_images;
@@ -90,7 +87,7 @@ void DataManager::ShowLocalMapFramesAndFeatures(const int32_t feature_id, const 
     // Load all frame images.
     int32_t frame_id = 0;
     MatImg show_image_mat = MatImg::Zero(show_image_rows, show_image_cols);
-    for (auto &frame : visual_local_map_->frames()) {
+    for (auto &frame: visual_local_map_->frames()) {
         // Compute location offset.
         const int32_t row_offset = image_rows * (frame_id / cols_of_images);
         const int32_t col_offset = image_cols * (frame_id % cols_of_images);
@@ -106,18 +103,19 @@ void DataManager::ShowLocalMapFramesAndFeatures(const int32_t feature_id, const 
 
     // Iterate all frames in local map.
     frame_id = 0;
-    for (const auto &frame : visual_local_map_->frames()) {
+    for (const auto &frame: visual_local_map_->frames()) {
         // Compute location offset.
         const int32_t row_offset = image_rows * (frame_id / cols_of_images);
         const int32_t col_offset = image_cols * (frame_id % cols_of_images);
         // Type basic information of each frame.
         const int32_t font_size = 16;
-        const RgbPixel info_color = frame_id >= static_cast<int32_t>(visual_local_map_->frames().size() - options_.kMaxStoredKeyFrames) ?
-            RgbColor::kRed : RgbColor::kGreen;
-        ImagePainter::DrawString(show_image, std::string("[ ") + std::to_string(frame.id()) + std::string(" | ") + std::to_string(frame.time_stamp_s()) + std::string("s ]"),
+        const RgbPixel info_color =
+            frame_id >= static_cast<int32_t>(visual_local_map_->frames().size() - options_.kMaxStoredKeyFrames) ? RgbColor::kRed : RgbColor::kGreen;
+        ImagePainter::DrawString(
+            show_image, std::string("[ ") + std::to_string(frame.id()) + std::string(" | ") + std::to_string(frame.time_stamp_s()) + std::string("s ]"),
             col_offset, row_offset, info_color, font_size);
         // Draw all observed features in this frame and this camera image.
-        for (auto &pair : frame.features()) {
+        for (auto &pair: frame.features()) {
             auto &feature = pair.second;
             auto &observe = feature->observe(frame.id());
             CONTINUE_IF(feature_id > 0 && static_cast<uint32_t>(feature_id) != feature->id());
@@ -126,7 +124,8 @@ void DataManager::ShowLocalMapFramesAndFeatures(const int32_t feature_id, const 
             // Draw feature in rgb image.
             Vec2 pixel_uv = observe[camera_id].raw_pixel_uv;
             const RgbPixel pixel_color = GetFeatureColor(*feature);
-            const std::string feature_text = feature->first_frame_id() == frame.id() ? std::to_string(feature->id()) + std::string("+") : std::to_string(feature->id());
+            const std::string feature_text =
+                feature->first_frame_id() == frame.id() ? std::to_string(feature->id()) + std::string("+") : std::to_string(feature->id());
             ImagePainter::DrawSolidCircle(show_image, pixel_uv.x() + col_offset, pixel_uv.y() + row_offset, 3, pixel_color);
             ImagePainter::DrawString(show_image, feature_text, pixel_uv.x() + col_offset, pixel_uv.y() + row_offset, pixel_color);
         }
@@ -141,7 +140,7 @@ void DataManager::ShowLocalMapFramesAndFeatures(const int32_t feature_id, const 
 
 void DataManager::ShowLocalMapInWorldFrame() {
     // Add word frame.
-    Visualizor3D::poses().emplace_back(PoseType{
+    Visualizor3D::poses().emplace_back(PoseType {
         .p_wb = Vec3::Zero(),
         .q_wb = Quat::Identity(),
         .scale = 1.0f,
@@ -151,9 +150,9 @@ void DataManager::ShowLocalMapInWorldFrame() {
     RETURN_IF(visual_local_map_->frames().empty());
 
     // Add all features in locap map.
-    for (const auto &pair : visual_local_map_->features()) {
+    for (const auto &pair: visual_local_map_->features()) {
         const auto &feature = pair.second;
-        Visualizor3D::points().emplace_back(PointType{
+        Visualizor3D::points().emplace_back(PointType {
             .p_w = feature.param(),
             .color = GetFeatureColor(feature),
             .radius = 2,
@@ -167,16 +166,14 @@ void DataManager::ShowLocalMapInWorldFrame() {
     Quat q_wi = Quat::Identity();
     Vec3 p_wc = Vec3::Zero();
     Quat q_wc = Quat::Identity();
-    for (const auto &frame : visual_local_map_->frames()) {
+    for (const auto &frame: visual_local_map_->frames()) {
         // Add imu frame in local map.
-        Utility::ComputeTransformTransformInverse(frame.p_wc(), frame.q_wc(),
-            camera_extrinsics_.front().p_ic,
-            camera_extrinsics_.front().q_ic, p_wi, q_wi);
-        Visualizor3D::poses().emplace_back(PoseType{ .p_wb = p_wi, .q_wb = q_wi, .scale = 0.02f });
+        Utility::ComputeTransformTransformInverse(frame.p_wc(), frame.q_wc(), camera_extrinsics_.front().p_ic, camera_extrinsics_.front().q_ic, p_wi, q_wi);
+        Visualizor3D::poses().emplace_back(PoseType {.p_wb = p_wi, .q_wb = q_wi, .scale = 0.02f});
 
         // Link relative imu pose.
         if (is_p_wi0_valid) {
-            Visualizor3D::lines().emplace_back(LineType{ .p_w_i = p_wi0, .p_w_j = p_wi, .color = RgbColor::kWhite });
+            Visualizor3D::lines().emplace_back(LineType {.p_w_i = p_wi0, .p_w_j = p_wi, .color = RgbColor::kWhite});
         }
         p_wi0 = p_wi;
         is_p_wi0_valid = true;
@@ -184,21 +181,20 @@ void DataManager::ShowLocalMapInWorldFrame() {
         // Add camera frames in local map for newest frame.
         if (frame.id() == visual_local_map_->frames().back().id()) {
             Visualizor3D::poses().back().scale = 0.1f;
-            for (const auto &extrinsic : camera_extrinsics_) {
+            for (const auto &extrinsic: camera_extrinsics_) {
                 Utility::ComputeTransformTransform(p_wi, q_wi, extrinsic.p_ic, extrinsic.q_ic, p_wc, q_wc);
-                Visualizor3D::poses().emplace_back(PoseType{ .p_wb = p_wc, .q_wb = q_wc, .scale = 0.01f });
+                Visualizor3D::poses().emplace_back(PoseType {.p_wb = p_wc, .q_wb = q_wc, .scale = 0.01f});
             }
         }
     }
 }
 
 void DataManager::ShowInformationWithStringsInVisualizor() {
-    Visualizor3D::strings().emplace_back(std::string("<local map> ") + std::to_string(visual_local_map_->frames().size()) +
-        std::string(" frames, ") + std::to_string(visual_local_map_->features().size()) + std::string(" features."));
+    Visualizor3D::strings().emplace_back(std::string("<local map> ") + std::to_string(visual_local_map_->frames().size()) + std::string(" frames, ") +
+                                         std::to_string(visual_local_map_->features().size()) + std::string(" features."));
     RETURN_IF(visual_local_map_->frames().empty());
 
-    Visualizor3D::strings().emplace_back(std::string("<time stamp> ") + std::to_string(visual_local_map_->frames().back().time_stamp_s()) +
-        std::string("s."));
+    Visualizor3D::strings().emplace_back(std::string("<time stamp> ") + std::to_string(visual_local_map_->frames().back().time_stamp_s()) + std::string("s."));
 }
 
 void DataManager::UpdateVisualizorCameraView() {
@@ -238,33 +234,28 @@ void DataManager::ShowMatrixImage(const std::string &title, const Mat &matrix) {
 }
 
 void DataManager::ShowSimpleInformationOfVisualLocalMap() {
-    for (const auto &frame : imu_based_frames_) {
+    for (const auto &frame: imu_based_frames_) {
         ReportInfo(" - imu based frame timestamp_s is " << frame.time_stamp_s);
         frame.imu_preint_block.SimpleInformation();
     }
-    for (const auto &frame : visual_local_map_->frames()) {
+    for (const auto &frame: visual_local_map_->frames()) {
         frame.SimpleInformation();
     }
 }
 
 void DataManager::ShowTinyInformationOfVisualLocalMap() {
     ReportInfo("[DataManager] Visual local map:");
-    for (const auto &frame : visual_local_map_->frames()) {
-        ReportInfo(" - cam frame " << frame.id() <<
-            " at " << frame.time_stamp_s() << "s" <<
-            ", q_wc " << LogQuat(frame.q_wc()) <<
-            ", p_wc " << LogVec(frame.p_wc()));
+    for (const auto &frame: visual_local_map_->frames()) {
+        ReportInfo(" - cam frame " << frame.id() << " at " << frame.time_stamp_s() << "s" << ", q_wc " << LogQuat(frame.q_wc()) << ", p_wc "
+                                   << LogVec(frame.p_wc()));
     }
-    for (const auto &frame : imu_based_frames_) {
+    for (const auto &frame: imu_based_frames_) {
         const auto &imus_vector = frame.packed_measure->imus;
-        ReportInfo(" - imu frame at " << frame.time_stamp_s << "s, " <<
-            "imu [" << imus_vector.front()->time_stamp_s << " ~ " << imus_vector.back()->time_stamp_s << "]s" <<
-            ", q_wi " << LogQuat(frame.q_wi) <<
-            ", p_wi " << LogVec(frame.p_wi) <<
-            ", v_wi " << LogVec(frame.v_wi) <<
-            ", bias_a " << LogVec(frame.imu_preint_block.bias_accel()) <<
-            ", bias_g " << LogVec(frame.imu_preint_block.bias_gyro()));
+        ReportInfo(" - imu frame at " << frame.time_stamp_s << "s, " << "imu [" << imus_vector.front()->time_stamp_s << " ~ "
+                                      << imus_vector.back()->time_stamp_s << "]s" << ", q_wi " << LogQuat(frame.q_wi) << ", p_wi " << LogVec(frame.p_wi)
+                                      << ", v_wi " << LogVec(frame.v_wi) << ", bias_a " << LogVec(frame.imu_preint_block.bias_accel()) << ", bias_g "
+                                      << LogVec(frame.imu_preint_block.bias_gyro()));
     }
 }
 
-}
+}  // namespace VIO

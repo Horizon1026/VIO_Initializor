@@ -2,10 +2,10 @@
 #define _VIO_INITIALIZOR_BACKEND_H_
 
 #include "basic_type.h"
-#include "imu.h"
 #include "data_manager.h"
-#include "visual_frontend.h"
 #include "general_graph_optimizor.h"
+#include "imu.h"
+#include "visual_frontend.h"
 
 namespace VIO {
 
@@ -80,12 +80,8 @@ public:
 private:
     // Backend initializor.
     bool TryToInitialize();
-    bool EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id,
-                                           const uint32_t cur_frame_id,
-                                           const uint32_t min_frame_id,
-                                           std::vector<Vec2> &ref_norm_xy,
-                                           std::vector<Vec2> &cur_norm_xy,
-                                           Quat &q_cr);
+    bool EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const uint32_t min_frame_id,
+                                           std::vector<Vec2> &ref_norm_xy, std::vector<Vec2> &cur_norm_xy, Quat &q_cr);
     // Estimate gyro bias for initialization.
     bool EstimateGyroBiasAndRotationForInitialization();
     bool EstimateGyroBiasByMethodOneForInitialization();
@@ -101,16 +97,10 @@ private:
     bool SyncInitializedResult(const Vec3 &gravity_i0);
 
     // Backend data processor.
-    bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
-                                                       const Vec3 &init_p_wc = Vec3::Zero(),
-                                                       const Quat &init_q_wc = Quat::Identity());
-    bool TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id,
-                                                      const int32_t min_frame_id = -1,
-                                                      const int32_t max_frame_id = kMaxInt32,
+    bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id, const Vec3 &init_p_wc = Vec3::Zero(), const Quat &init_q_wc = Quat::Identity());
+    bool TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id, const int32_t min_frame_id = -1, const int32_t max_frame_id = kMaxInt32,
                                                       const bool use_multi_view = false);
-    void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
-                                         const Vec3 &bias_gyro,
-                                         ImuBasedFrame &imu_based_frame);
+    void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel, const Vec3 &bias_gyro, ImuBasedFrame &imu_based_frame);
     TMat2<DorF> GetVisualObserveInformationMatrix();
     bool TriangulizeAllVisualFeatures();
 
@@ -130,6 +120,6 @@ private:
     std::unique_ptr<Imu> imu_model_ = nullptr;
 };
 
-}
+}  // namespace VIO
 
-#endif // end of _VIO_INITIALIZOR_BACKEND_H_
+#endif  // end of _VIO_INITIALIZOR_BACKEND_H_

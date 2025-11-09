@@ -2,10 +2,10 @@
 #define _VIO_INITIALIZOR_BACKEND_H_
 
 #include "basic_type.h"
-#include "imu.h"
 #include "data_manager.h"
-#include "visual_frontend.h"
 #include "general_graph_optimizor.h"
+#include "imu.h"
+#include "visual_frontend.h"
 
 namespace VIO {
 
@@ -89,16 +89,10 @@ private:
     bool SyncInitializedResult(const Vec3 &gravity_c0, const Vec &all_v_ii, const float &scale);
 
     // Backend data processor.
-    bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
-                                                       const Vec3 &init_p_wc = Vec3::Zero(),
-                                                       const Quat &init_q_wc = Quat::Identity());
-    bool TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id,
-                                                      const int32_t min_frame_id = -1,
-                                                      const int32_t max_frame_id = kMaxInt32,
+    bool TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id, const Vec3 &init_p_wc = Vec3::Zero(), const Quat &init_q_wc = Quat::Identity());
+    bool TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id, const int32_t min_frame_id = -1, const int32_t max_frame_id = kMaxInt32,
                                                       const bool use_multi_view = false);
-    void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
-                                         const Vec3 &bias_gyro,
-                                         ImuBasedFrame &imu_based_frame);
+    void RecomputeImuPreintegrationBlock(const Vec3 &bias_accel, const Vec3 &bias_gyro, ImuBasedFrame &imu_based_frame);
     TMat2<DorF> GetVisualObserveInformationMatrix();
 
 private:
@@ -117,6 +111,6 @@ private:
     std::unique_ptr<Imu> imu_model_ = nullptr;
 };
 
-}
+}  // namespace VIO
 
-#endif // end of _VIO_INITIALIZOR_BACKEND_H_
+#endif  // end of _VIO_INITIALIZOR_BACKEND_H_

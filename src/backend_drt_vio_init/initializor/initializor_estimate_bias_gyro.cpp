@@ -1,22 +1,18 @@
 #include "backend.h"
-#include "slam_log_reporter.h"
 #include "relative_rotation.h"
+#include "slam_log_reporter.h"
 
 namespace VIO {
 
 bool Backend::EstimateGyroBiasAndRotationForInitialization() {
-    for (auto &imu_based_frame : data_manager_->imu_based_frames()) {
+    for (auto &imu_based_frame: data_manager_->imu_based_frames()) {
         RecomputeImuPreintegrationBlock(Vec3::Zero(), Vec3::Zero(), imu_based_frame);
     }
     return EstimateGyroBiasByMethodThreeForInitialization();
 }
 
-bool Backend::EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id,
-                                                const uint32_t cur_frame_id,
-                                                const uint32_t min_frame_id,
-                                                std::vector<Vec2> &ref_norm_xy,
-                                                std::vector<Vec2> &cur_norm_xy,
-                                                Quat &q_cr) {
+bool Backend::EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id, const uint32_t cur_frame_id, const uint32_t min_frame_id,
+                                                std::vector<Vec2> &ref_norm_xy, std::vector<Vec2> &cur_norm_xy, Quat &q_cr) {
     ref_norm_xy.clear();
     cur_norm_xy.clear();
 
@@ -26,7 +22,7 @@ bool Backend::EstimatePureRotationOfCameraFrame(const uint32_t ref_frame_id,
         ReportError("[Backend] Failed to get covisible features between frame " << ref_frame_id << " and " << cur_frame_id << ".");
         return false;
     }
-    for (const auto &feature_ptr : covisible_features) {
+    for (const auto &feature_ptr: covisible_features) {
         ref_norm_xy.emplace_back(feature_ptr->observe(ref_frame_id)[0].rectified_norm_xy);
         cur_norm_xy.emplace_back(feature_ptr->observe(cur_frame_id)[0].rectified_norm_xy);
     }
@@ -90,7 +86,7 @@ bool Backend::EstimateGyroBiasByMethodOneForInitialization() {
         RETURN_FALSE_IF(Eigen::isnan(delta_bg.array()).any());
 
         // Recompute imu preintegration block with new bias of gyro.
-        for (auto &frame : data_manager_->imu_based_frames()) {
+        for (auto &frame: data_manager_->imu_based_frames()) {
             frame.imu_preint_block.ResetIntegratedStates();
             frame.imu_preint_block.bias_gyro() += delta_bg;
             const int32_t max_idx = static_cast<int32_t>(frame.packed_measure->imus.size());
@@ -111,7 +107,8 @@ bool Backend::EstimateGyroBiasByMethodOneForInitialization() {
 }
 
 bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
-    ReportInfo("[Backend] Try to estimate bias of gyro by Method 2, which is the raw version from HeYijia, but is not valid now.");
+    ReportInfo("[Backend] Try to estimate bias of gyro by Method 2, which is the raw version from HeYijia, but is not "
+               "valid now.");
 
     // Localize the left camera extrinsic.
     const Quat q_ic = data_manager_->camera_extrinsics().front().q_ic;
@@ -141,7 +138,7 @@ bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
         data_manager_->visual_local_map()->GetCovisibleFeatures(i, i + 1, covisible_features);
         ref_norm_xy.clear();
         cur_norm_xy.clear();
-        for (const auto &feature_ptr : covisible_features) {
+        for (const auto &feature_ptr: covisible_features) {
             ref_norm_xy.emplace_back(feature_ptr->observe(i)[0].rectified_norm_xy);
             cur_norm_xy.emplace_back(feature_ptr->observe(i + 1)[0].rectified_norm_xy);
         }
@@ -155,7 +152,7 @@ bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
         all_dr_dbgs.emplace_back(dr_dbg);
 
         // Compute summation terms.
-        all_summation_terms.emplace_back(SummationTerms{});
+        all_summation_terms.emplace_back(SummationTerms {});
         auto &terms = all_summation_terms.back();
         for (uint32_t i = 0; i < ref_norm_xy.size(); ++i) {
             const Vec3 f1 = q_jc * Vec3(ref_norm_xy[i].x(), ref_norm_xy[i].y(), 1).normalized();
@@ -184,8 +181,7 @@ bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
             const Quat q = Utility::ConvertAngleAxisToQuaternion(jac_bg);
             const Vec3 cayley = Utility::ConvertQuaternionToCayley(q);
             Mat1x3 dlambda_dcayley;
-            const float smallest_eigen_value = RelativeRotation::ComputeSmallestEigenValueAndJacobian(
-                all_summation_terms[j], cayley, dlambda_dcayley);
+            const float smallest_eigen_value = RelativeRotation::ComputeSmallestEigenValueAndJacobian(all_summation_terms[j], cayley, dlambda_dcayley);
             const Mat1x3 jacobian = dlambda_dcayley * all_dr_dbgs[j];
 
             hessian += jacobian.transpose() * jacobian;
@@ -198,7 +194,7 @@ bool Backend::EstimateGyroBiasByMethodTwoForInitialization() {
     }
 
     // Recompute imu preintegration block with new bias of gyro.
-    for (auto &frame : data_manager_->imu_based_frames()) {
+    for (auto &frame: data_manager_->imu_based_frames()) {
         frame.imu_preint_block.ResetIntegratedStates();
         frame.imu_preint_block.bias_gyro() = bias_g;
         const int32_t max_idx = static_cast<int32_t>(frame.packed_measure->imus.size());
@@ -255,7 +251,7 @@ bool Backend::EstimateGyroBiasByMethodThreeForInitialization() {
     RETURN_FALSE_IF(Eigen::isnan(bias_g.array()).any());
 
     // Recompute imu preintegration block with new bias of gyro.
-    for (auto &frame : data_manager_->imu_based_frames()) {
+    for (auto &frame: data_manager_->imu_based_frames()) {
         frame.imu_preint_block.ResetIntegratedStates();
         frame.imu_preint_block.bias_gyro() = bias_g;
         const int32_t max_idx = static_cast<int32_t>(frame.packed_measure->imus.size());
@@ -270,4 +266,4 @@ bool Backend::EstimateGyroBiasByMethodThreeForInitialization() {
     return true;
 }
 
-}
+}  // namespace VIO

@@ -9,7 +9,7 @@ bool Backend::TryToInitialize() {
         return false;
     }
 
-     // Convert all frames into a covisible graph.
+    // Convert all frames into a covisible graph.
     if (!data_manager_->ConvertAllImuBasedFramesToLocalMap()) {
         ReportError("[Backend] Backend failed to convert frames to covisible graph.");
         return false;
@@ -54,7 +54,7 @@ bool Backend::SyncInitializedResult(const Vec3 &gravity_i0) {
 
     // Iterate all frames, transform all states of them from i0 to w.
     auto it = data_manager_->imu_based_frames().begin();
-    for (auto &frame : data_manager_->visual_local_map()->frames()) {
+    for (auto &frame: data_manager_->visual_local_map()->frames()) {
         const Quat q_c0c = frame.q_wc();
         const Vec3 p_c0c = frame.p_wc();
         const Vec3 v_c0c = it->v_wi;
@@ -73,4 +73,4 @@ bool Backend::SyncInitializedResult(const Vec3 &gravity_i0) {
     return true;
 }
 
-}
+}  // namespace VIO

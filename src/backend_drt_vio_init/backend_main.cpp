@@ -45,4 +45,4 @@ void Backend::ResetToReintialize() {
     status_.is_initialized = false;
 }
 
-}
+}  // namespace VIO

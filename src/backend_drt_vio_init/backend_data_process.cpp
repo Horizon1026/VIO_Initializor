@@ -3,14 +3,12 @@
 #include "tick_tock.h"
 
 #include "geometry_epipolar.h"
-#include "point_triangulator.h"
 #include "geometry_pnp.h"
+#include "point_triangulator.h"
 
 namespace VIO {
 
-bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id,
-                                                            const Vec3 &init_p_wc,
-                                                            const Quat &init_q_wc) {
+bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id, const Vec3 &init_p_wc, const Quat &init_q_wc) {
     auto frame_ptr = data_manager_->visual_local_map()->frame(frame_id);
     RETURN_FALSE_IF(frame_ptr == nullptr);
     RETURN_FALSE_IF(frame_ptr->features().empty());
@@ -20,7 +18,7 @@ bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_
     std::vector<Vec2> all_norm_xy;
     all_p_w.reserve(frame_ptr->features().size());
     all_norm_xy.reserve(frame_ptr->features().size());
-    for (const auto &pair : frame_ptr->features()) {
+    for (const auto &pair: frame_ptr->features()) {
         const auto &feature_ptr = pair.second;
         CONTINUE_IF(feature_ptr->status() != FeatureSolvedStatus::kSolved)
         all_p_w.emplace_back(feature_ptr->param());
@@ -43,9 +41,7 @@ bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_
     return true;
 }
 
-bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id,
-                                                           const int32_t min_frame_id,
-                                                           const int32_t max_frame_id,
+bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature_id, const int32_t min_frame_id, const int32_t max_frame_id,
                                                            const bool use_multi_view) {
     auto feature_ptr = data_manager_->visual_local_map()->feature(feature_id);
     RETURN_FALSE_IF(feature_ptr == nullptr);
@@ -96,7 +92,8 @@ bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature
                                 = [R_wc0 * R_ic0.t  -R_wc0 * R_ic0.t * t_ic0 + t_wc0] * [R_ici  t_ici]
                                     [       0                        1                ]   [  0      1  ]
                                 = [R_wc0 * R_ic0.t * R_ici  R_wc0 * R_ic0.t * t_ici - R_wc0 * R_ic0.t * t_ic0 + t_wc0]
-                                    [           0                                          1                           ] */
+                                    [           0                                          1                           ]
+             */
             const Quat q_wci = q_wi * q_ici;
             const Vec3 p_wci = q_wi * p_ici - q_wi * p_ic0 + p_wc;
             const Vec2 norm_xy_i = obv[i].rectified_norm_xy;
@@ -118,34 +115,29 @@ bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature
     return true;
 }
 
-void Backend::RecomputeImuPreintegrationBlock(const Vec3 &bias_accel,
-                                              const Vec3 &bias_gyro,
-                                              ImuBasedFrame &imu_based_frame) {
+void Backend::RecomputeImuPreintegrationBlock(const Vec3 &bias_accel, const Vec3 &bias_gyro, ImuBasedFrame &imu_based_frame) {
     imu_based_frame.imu_preint_block.Reset();
     imu_based_frame.imu_preint_block.bias_accel() = bias_accel;
     imu_based_frame.imu_preint_block.bias_gyro() = bias_gyro;
-    imu_based_frame.imu_preint_block.SetImuNoiseSigma(imu_model_->options().kAccelNoiseSigma,
-                                                      imu_model_->options().kGyroNoiseSigma,
-                                                      imu_model_->options().kAccelRandomWalkSigma,
-                                                      imu_model_->options().kGyroRandomWalkSigma);
+    imu_based_frame.imu_preint_block.SetImuNoiseSigma(imu_model_->options().kAccelNoiseSigma, imu_model_->options().kGyroNoiseSigma,
+                                                      imu_model_->options().kAccelRandomWalkSigma, imu_model_->options().kGyroRandomWalkSigma);
 
     const uint32_t max_idx = imu_based_frame.packed_measure->imus.size();
     for (uint32_t i = 1; i < max_idx; ++i) {
-        imu_based_frame.imu_preint_block.Propagate(*imu_based_frame.packed_measure->imus[i - 1],
-            *imu_based_frame.packed_measure->imus[i]);
+        imu_based_frame.imu_preint_block.Propagate(*imu_based_frame.packed_measure->imus[i - 1], *imu_based_frame.packed_measure->imus[i]);
     }
 }
 
 TMat2<DorF> Backend::GetVisualObserveInformationMatrix() {
     const auto &camera_model = visual_frontend_->camera_models().front();
     const DorF residual_in_pixel = 1.0;
-    const TVec2<DorF> visual_observe_info_vec = TVec2<DorF>(camera_model->fx() * camera_model->fx(),
-        camera_model->fy() * camera_model->fy()) / residual_in_pixel;
+    const TVec2<DorF> visual_observe_info_vec =
+        TVec2<DorF>(camera_model->fx() * camera_model->fx(), camera_model->fy() * camera_model->fy()) / residual_in_pixel;
     return visual_observe_info_vec.asDiagonal();
 }
 
 bool Backend::TriangulizeAllVisualFeatures() {
-    for (auto &pair : data_manager_->visual_local_map()->features()) {
+    for (auto &pair: data_manager_->visual_local_map()->features()) {
         auto &feature = pair.second;
         CONTINUE_IF(feature.observes().size() < 2);
         TryToSolveFeaturePositionByFramesObservingIt(feature.id(), feature.first_frame_id(), feature.final_frame_id());
@@ -153,4 +145,4 @@ bool Backend::TriangulizeAllVisualFeatures() {
     return true;
 }
 
-}
+}  // namespace VIO

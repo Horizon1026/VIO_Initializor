@@ -93,6 +93,6 @@ struct VioOptions {
     std::string log_file_root_name;
 };
 
-}
+}  // namespace VIO
 
-#endif // end of _VIO_INITIALIZOR_CONFIG_H_
+#endif  // end of _VIO_INITIALIZOR_CONFIG_H_
