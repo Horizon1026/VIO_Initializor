@@ -2,7 +2,7 @@
 #include "slam_log_reporter.h"
 #include "tick_tock.h"
 
-namespace VIO {
+namespace vio {
 
 bool Backend::RunOnce() {
     ReportInfo(MAGENTA "[Backend] Backend is triggerred to run once." RESET_COLOR);
@@ -45,4 +45,4 @@ void Backend::ResetToReintialize() {
     status_.is_initialized = false;
 }
 
-}  // namespace VIO
+}  // namespace vio

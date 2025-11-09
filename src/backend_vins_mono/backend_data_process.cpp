@@ -6,7 +6,7 @@
 #include "geometry_pnp.h"
 #include "point_triangulator.h"
 
-namespace VIO {
+namespace vio {
 
 bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_id, const Vec3 &init_p_wc, const Quat &init_q_wc) {
     auto frame_ptr = data_manager_->visual_local_map()->frame(frame_id);
@@ -30,7 +30,7 @@ bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_
     Vec3 p_wc = init_p_wc;
     Quat q_wc = init_q_wc;
     std::vector<uint8_t> status;
-    using namespace VISION_GEOMETRY;
+    using namespace vision_geometry;
     PnpSolver solver;
     solver.options().kMethod = PnpSolver::Method::kOptimizeHuber;
     RETURN_FALSE_IF(!solver.EstimatePose(all_p_w, all_norm_xy, q_wc, p_wc, status));
@@ -48,7 +48,7 @@ bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature
     RETURN_FALSE_IF(feature_ptr->observes().size() < 2);
     RETURN_FALSE_IF(feature_ptr->observes().size() == 1 && feature_ptr->observes().front().size() < 2);
 
-    using namespace VISION_GEOMETRY;
+    using namespace vision_geometry;
     PointTriangulator solver;
     solver.options().kMethod = PointTriangulator::Method::kAnalytic;
 
@@ -136,4 +136,4 @@ TMat2<DorF> Backend::GetVisualObserveInformationMatrix() {
     return visual_observe_info_vec.asDiagonal();
 }
 
-}  // namespace VIO
+}  // namespace vio

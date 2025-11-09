@@ -7,12 +7,12 @@
 #include "imu.h"
 #include "visual_frontend.h"
 
-namespace VIO {
+namespace vio {
 
-using namespace SLAM_UTILITY;
-using namespace SLAM_DATA_LOG;
-using namespace SLAM_SOLVER;
-using namespace SENSOR_MODEL;
+using namespace slam_utility;
+using namespace slam_data_log;
+using namespace slam_solver;
+using namespace sensor_model;
 using DorF = float;
 
 /* Options for Backend. */
@@ -111,6 +111,6 @@ private:
     std::unique_ptr<Imu> imu_model_ = nullptr;
 };
 
-}  // namespace VIO
+}  // namespace vio
 
 #endif  // end of _VIO_INITIALIZOR_BACKEND_H_

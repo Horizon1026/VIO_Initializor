@@ -1,7 +1,7 @@
 #include "backend.h"
 #include "slam_log_reporter.h"
 
-namespace VIO {
+namespace vio {
 
 bool Backend::TryToInitialize() {
     if (data_manager_->imu_based_frames().size() < data_manager_->options().kMaxStoredKeyFrames) {
@@ -73,4 +73,4 @@ bool Backend::SyncInitializedResult(const Vec3 &gravity_i0) {
     return true;
 }
 
-}  // namespace VIO
+}  // namespace vio

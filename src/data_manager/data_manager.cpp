@@ -1,6 +1,6 @@
 #include "data_manager.h"
 
-namespace VIO {
+namespace vio {
 
 void DataManager::Clear() {
     if (visual_local_map_ != nullptr) {
@@ -169,4 +169,4 @@ void DataManager::ControlSizeOfImuBasedFrames() {
     }
 }
 
-}  // namespace VIO
+}  // namespace vio
