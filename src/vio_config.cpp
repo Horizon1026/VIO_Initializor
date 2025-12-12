@@ -5,7 +5,7 @@
 #include "feature_point_detector.h"
 #include "feature_point_fast_detector.h"
 #include "optical_flow_basic_klt.h"
-#include "pinhole.h"
+#include "camera_model.h"
 
 namespace vio {
 
@@ -81,7 +81,7 @@ bool Vio::ConfigComponentOfDataLoader() {
 }
 
 bool Vio::ConfigComponentOfFrontend() {
-    using CameraType = sensor_model::Pinhole;
+    using CameraType = sensor_model::CameraPinholeRadtan;
     using FeatureType = feature_detector::FeaturePointFastDetector;
     using KltType = feature_tracker::OpticalFlowBasicKlt;
 
