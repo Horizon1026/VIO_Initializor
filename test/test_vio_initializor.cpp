@@ -101,7 +101,7 @@ void PublishCameraData(const std::string &csv_file_path, const std::string &imag
         }
 
         // Send data to dataloader of vio_system.
-        vio_system.data_loader()->PushImageMeasurement(image.data(), image.rows(), image.cols(), static_cast<float>(time_stamp_s * 1e-9 - time_stamp_offset),
+        vio_system.data_loader()->PushImageMeasurement(std::move(image), static_cast<float>(time_stamp_s * 1e-9 - time_stamp_offset),
                                                        is_left_camera);
 
         // Waiting for next timestamp.
