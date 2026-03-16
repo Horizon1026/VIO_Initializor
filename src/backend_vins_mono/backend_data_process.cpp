@@ -105,7 +105,7 @@ bool Backend::TryToSolveFeaturePositionByFramesObservingIt(const int32_t feature
 
     // Triangulize feature.
     Vec3 p_w = Vec3::Zero();
-    if (solver.Triangulate(all_q_wc, all_p_wc, all_norm_xy, p_w)) {
+    if (solver.Triangulate(all_p_wc, all_q_wc, all_norm_xy, p_w)) {
         feature_ptr->param() = p_w;
         feature_ptr->status() = FeatureSolvedStatus::kSolved;
     } else {
