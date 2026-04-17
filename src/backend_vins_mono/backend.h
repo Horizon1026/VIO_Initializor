@@ -48,7 +48,7 @@ struct BackendStates {
         Vec3 v_wi = Vec3::Zero();
         Vec3 ba = Vec3::Zero();
         Vec3 bg = Vec3::Zero();
-        float time_stamp_s = 0.0f;
+        double time_stamp_s = 0.0;
     } motion;
 };
 

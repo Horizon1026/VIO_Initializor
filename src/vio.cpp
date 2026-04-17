@@ -23,7 +23,7 @@ bool Vio::RunOnce() {
         ReportWarn("[Vio] Packed measurements is not valid at " << vio_sys_timer_.TockInSecond() << " s.");
         return false;
     }
-    const float time_stamp_s = packed_measure->imus.back()->time_stamp_s;
+    const double time_stamp_s = packed_measure->imus.back()->time_stamp_s;
 
     // Transform image measurement to be features measurement.
     if (!frontend_->RunOnce(packed_measure->left_image->image, packed_measure->right_image->image, time_stamp_s)) {
