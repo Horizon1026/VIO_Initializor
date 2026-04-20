@@ -15,6 +15,8 @@ Several initializor of visual-inertial odometry.
     - [ ] Initialization. (ORB-SLAM3)
 
 # Dependence
+
+### Project repositories
 - Slam_Utility
 - Feature_Detector
 - Feature_Tracker
@@ -26,6 +28,10 @@ Several initializor of visual-inertial odometry.
 - Binary_Data_Log
 - Visualizor2D
 - Visualizor3D
+
+### Third-party repositories
+- Eigen3 (>= 3.3.7)（`sudo apt install libeigen3-dev`）
+- dw (`sudo apt install libdw-dev`)
 
 # Compile and Run
 - 第三方仓库的话需要自行 apt-get install 安装
