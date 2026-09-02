@@ -1,11 +1,12 @@
 #ifndef _VIO_INITIALIZOR_BACKEND_H_
 #define _VIO_INITIALIZOR_BACKEND_H_
 
-#include "basic_type.h"
 #include "data_manager.h"
+#include "visual_frontend.h"
+
+#include "basic_type.h"
 #include "general_graph_optimizor.h"
 #include "imu.h"
-#include "visual_frontend.h"
 
 namespace vio {
 

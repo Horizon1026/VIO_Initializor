@@ -1,8 +1,9 @@
 #include "backend.h"
+#include "visual_edges.h"
+
 #include "geometry_epipolar.h"
 #include "point_triangulator.h"
 #include "slam_operations.h"
-#include "visual_edges.h"
 
 namespace vio {
 

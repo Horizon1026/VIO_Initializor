@@ -2,6 +2,7 @@
 #define _VIO_INITIALIZOR_CONFIG_H_
 
 #include "basic_type.h"
+
 #include "string"
 
 namespace vio {
