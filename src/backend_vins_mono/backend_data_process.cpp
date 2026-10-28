@@ -33,7 +33,7 @@ bool Backend::TryToSolveFramePoseByFeaturesObservedByItself(const int32_t frame_
     using namespace vision_geometry;
     PnpSolver solver;
     solver.options().kMethod = PnpSolver::Method::kOptimizeHuber;
-    RETURN_FALSE_IF(!solver.EstimatePose(all_p_w, all_norm_xy, q_wc, p_wc, status));
+    RETURN_FALSE_IF(!solver.EstimatePose(all_p_w, all_norm_xy, p_wc, q_wc, status));
 
     frame_ptr->p_wc() = p_wc;
     frame_ptr->q_wc() = q_wc;
